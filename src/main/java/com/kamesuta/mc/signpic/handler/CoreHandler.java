@@ -8,6 +8,8 @@ import com.kamesuta.mc.signpic.entry.EntryManager;
 import com.kamesuta.mc.signpic.entry.EntrySlot;
 import com.kamesuta.mc.signpic.entry.content.ContentManager;
 import com.kamesuta.mc.signpic.information.InformationChecker;
+import com.kamesuta.mc.signpic.plugin.Manager;
+import com.kamesuta.mc.signpic.plugin.packet.PacketHandler;
 import com.kamesuta.mc.signpic.render.SignPicRender;
 
 import net.minecraftforge.client.event.GuiOpenEvent;
@@ -21,6 +23,7 @@ import net.minecraftforge.fml.common.gameevent.InputEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.ClientTickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
+import net.minecraftforge.fml.common.network.FMLNetworkEvent;
 
 public class CoreHandler {
 	public final Config configHandler = Config.instance;
@@ -30,12 +33,14 @@ public class CoreHandler {
 	public final ContentManager contentManager = ContentManager.instance;
 	public final SignPicRender renderHandler = new SignPicRender();
 	public final InformationChecker informationHandler = new InformationChecker();
+	public final PacketHandler packetHandler = Manager.instance.handler;
 
 	public void init() {
 		MinecraftForge.EVENT_BUS.register(this);
 		KeyHandler.init();
 		SignHandler.init();
 		InformationChecker.init();
+		PacketHandler.init();
 	}
 
 	@SubscribeEvent
@@ -88,5 +93,10 @@ public class CoreHandler {
 			EntrySlot.Tick();
 			Client.endSection();
 		}
+	}
+
+	@SubscribeEvent
+	public void onClientPacket(final FMLNetworkEvent.ClientCustomPacketEvent event) {
+		this.packetHandler.onClientPacket(event);
 	}
 }
