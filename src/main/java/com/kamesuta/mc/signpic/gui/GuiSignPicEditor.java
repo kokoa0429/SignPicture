@@ -19,7 +19,6 @@ import com.kamesuta.mc.bnnwidget.position.RArea;
 import com.kamesuta.mc.signpic.entry.Entry;
 import com.kamesuta.mc.signpic.entry.EntryId;
 import com.kamesuta.mc.signpic.entry.EntryIdBuilder;
-import com.kamesuta.mc.signpic.entry.content.ContentManager;
 import com.kamesuta.mc.signpic.mode.CurrentMode;
 import com.kamesuta.mc.signpic.render.RenderHelper;
 import com.kamesuta.mc.signpic.util.Sign;
@@ -112,7 +111,7 @@ public class GuiSignPicEditor extends WFrame {
 					protected void initWidget() {
 						add(new MPanel(new RArea(Coord.top(5), Coord.left(5), Coord.right(70), Coord.bottom(25))) {
 							{
-								add(new SignPicLabel(new RArea(Coord.top(5), Coord.left(5), Coord.right(5), Coord.bottom(5)), ContentManager.instance) {
+								add(new SignPicLabel(new RArea(Coord.top(5), Coord.left(5), Coord.right(5), Coord.bottom(5))) {
 									@Override
 									public EntryId getEntryId() {
 										return CurrentMode.instance.getEntryId();

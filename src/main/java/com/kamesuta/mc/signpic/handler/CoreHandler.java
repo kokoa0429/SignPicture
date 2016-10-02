@@ -8,10 +8,10 @@ import com.kamesuta.mc.signpic.entry.EntryManager;
 import com.kamesuta.mc.signpic.entry.EntrySlot;
 import com.kamesuta.mc.signpic.entry.content.ContentManager;
 import com.kamesuta.mc.signpic.information.InformationChecker;
-import com.kamesuta.mc.signpic.plugin.Manager;
 import com.kamesuta.mc.signpic.plugin.packet.PacketHandler;
 import com.kamesuta.mc.signpic.render.SignPicRender;
 
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraftforge.client.event.GuiOpenEvent;
 import net.minecraftforge.client.event.MouseEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
@@ -23,7 +23,6 @@ import net.minecraftforge.fml.common.gameevent.InputEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.ClientTickEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent.Phase;
-import net.minecraftforge.fml.common.network.FMLNetworkEvent;
 
 public class CoreHandler {
 	public final Config configHandler = Config.instance;
@@ -33,7 +32,6 @@ public class CoreHandler {
 	public final ContentManager contentManager = ContentManager.instance;
 	public final SignPicRender renderHandler = new SignPicRender();
 	public final InformationChecker informationHandler = new InformationChecker();
-	public final PacketHandler packetHandler = Manager.instance.handler;
 
 	public void init() {
 		MinecraftForge.EVENT_BUS.register(this);
@@ -41,6 +39,11 @@ public class CoreHandler {
 		SignHandler.init();
 		InformationChecker.init();
 		PacketHandler.init();
+	}
+
+	private GuiScreen guiLater;
+	public void openLater(final GuiScreen s) {
+		this.guiLater = s;
 	}
 
 	@SubscribeEvent
@@ -86,6 +89,10 @@ public class CoreHandler {
 	@SubscribeEvent
 	public void onTick(final ClientTickEvent event) {
 		if (event.phase == Phase.END) {
+			if (this.guiLater!=null) {
+				Client.mc.displayGuiScreen(this.guiLater);
+				this.guiLater = null;
+			}
 			Client.startSection("signpic_load");
 			this.signEntryManager.onTick();
 			this.contentManager.onTick();
@@ -93,10 +100,5 @@ public class CoreHandler {
 			EntrySlot.Tick();
 			Client.endSection();
 		}
-	}
-
-	@SubscribeEvent
-	public void onClientPacket(final FMLNetworkEvent.ClientCustomPacketEvent event) {
-		this.packetHandler.onClientPacket(event);
 	}
 }

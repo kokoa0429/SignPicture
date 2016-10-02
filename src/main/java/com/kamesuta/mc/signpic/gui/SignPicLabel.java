@@ -11,7 +11,6 @@ import com.kamesuta.mc.signpic.Client;
 import com.kamesuta.mc.signpic.entry.Entry;
 import com.kamesuta.mc.signpic.entry.EntryId;
 import com.kamesuta.mc.signpic.entry.content.Content;
-import com.kamesuta.mc.signpic.entry.content.ContentManager;
 import com.kamesuta.mc.signpic.image.meta.ImageSize;
 import com.kamesuta.mc.signpic.image.meta.ImageSize.ImageSizes;
 import com.kamesuta.mc.signpic.render.RenderHelper;
@@ -22,11 +21,9 @@ import net.minecraft.util.ResourceLocation;
 public class SignPicLabel extends WBase {
 	public static final ResourceLocation defaultTexture = new ResourceLocation("signpic", "textures/logo.png");
 	protected EntryId entryId;
-	protected ContentManager manager;
 
-	public SignPicLabel(final R position, final ContentManager manager) {
+	public SignPicLabel(final R position) {
 		super(position);
-		this.manager = manager;
 	}
 
 	@Override
