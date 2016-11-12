@@ -1,18 +1,22 @@
 package com.kamesuta.mc.signpic.handler;
 
+import org.lwjgl.input.Keyboard;
 import org.lwjgl.util.Timer;
 
+import com.kamesuta.mc.signpic.Apis;
 import com.kamesuta.mc.signpic.Client;
 import com.kamesuta.mc.signpic.Config;
 import com.kamesuta.mc.signpic.entry.EntryManager;
 import com.kamesuta.mc.signpic.entry.EntrySlot;
 import com.kamesuta.mc.signpic.entry.content.ContentManager;
-import com.kamesuta.mc.signpic.information.InformationChecker;
+import com.kamesuta.mc.signpic.gui.OverlayFrame;
+import com.kamesuta.mc.signpic.information.Informations;
 import com.kamesuta.mc.signpic.plugin.packet.PacketHandler;
 import com.kamesuta.mc.signpic.render.SignPicRender;
 
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraftforge.client.event.GuiOpenEvent;
+import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.client.event.MouseEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
@@ -31,13 +35,16 @@ public class CoreHandler {
 	public final EntryManager signEntryManager = EntryManager.instance;
 	public final ContentManager contentManager = ContentManager.instance;
 	public final SignPicRender renderHandler = new SignPicRender();
-	public final InformationChecker informationHandler = new InformationChecker();
+	public final OverlayFrame overlayHandler = OverlayFrame.instance;
+	public final Informations informationHandler = Informations.instance;
+	public final Apis apiHandler = Apis.instance;
 
 	public void init() {
 		MinecraftForge.EVENT_BUS.register(this);
 		KeyHandler.init();
 		SignHandler.init();
-		InformationChecker.init();
+		this.informationHandler.init();
+		this.apiHandler.init();
 		PacketHandler.init();
 	}
 
@@ -74,6 +81,12 @@ public class CoreHandler {
 	@SubscribeEvent()
 	public void onDraw(final RenderGameOverlayEvent.Post event) {
 		this.renderHandler.onDraw(event);
+		this.overlayHandler.onDraw(event);
+	}
+
+	@SubscribeEvent()
+	public void onDraw(final GuiScreenEvent.DrawScreenEvent.Post event) {
+		this.overlayHandler.onDraw(event);
 	}
 
 	@SubscribeEvent
@@ -94,11 +107,28 @@ public class CoreHandler {
 				this.guiLater = null;
 			}
 			Client.startSection("signpic_load");
+			debugKey();
 			this.signEntryManager.onTick();
 			this.contentManager.onTick();
+			this.overlayHandler.onTick(event);
 			this.informationHandler.onTick(event);
 			EntrySlot.Tick();
 			Client.endSection();
 		}
+	}
+
+	boolean debugKey;
+
+	void debugKey() {
+		if (Keyboard.isKeyDown(Keyboard.KEY_I)&&Keyboard.isKeyDown(Keyboard.KEY_O)&&Keyboard.isKeyDown(Keyboard.KEY_P)) {
+			if (!this.debugKey)
+				debug();
+			this.debugKey = true;
+		} else
+			this.debugKey = false;
+	}
+
+	void debug() {
+		Client.openEditor();
 	}
 }

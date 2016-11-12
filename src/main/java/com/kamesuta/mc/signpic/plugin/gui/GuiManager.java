@@ -14,7 +14,6 @@ import com.kamesuta.mc.bnnwidget.position.Area;
 import com.kamesuta.mc.bnnwidget.position.Coord;
 import com.kamesuta.mc.bnnwidget.position.Point;
 import com.kamesuta.mc.bnnwidget.position.R;
-import com.kamesuta.mc.bnnwidget.position.RArea;
 import com.kamesuta.mc.signpic.entry.EntryId;
 import com.kamesuta.mc.signpic.gui.SignPicLabel;
 import com.kamesuta.mc.signpic.plugin.SignData;
@@ -30,7 +29,7 @@ public class GuiManager extends WFrame {
 	public GuiManager(final String data, final String size) {
 		this.key = data;
 		this.size = NumberUtils.toInt(size);
-		this.gallery = new GuiGallery(new RArea(Coord.left(0),Coord.top(0), Coord.right(0), Coord.bottom(0)));
+		this.gallery = new GuiGallery(new R(Coord.left(0), Coord.top(0), Coord.right(0), Coord.bottom(0)));
 	}
 
 	public void data(final String token, final String s) {
@@ -51,7 +50,7 @@ public class GuiManager extends WFrame {
 		public GuiGallery(final R position) {
 			super(position);
 			this.offset = MCoord.top(0);
-			this.panel = new GalleryPanel(new RArea(Coord.left(0), this.offset, Coord.right(0), Coord.bottom(0)));
+			this.panel = new GalleryPanel(new R(Coord.left(0), this.offset, Coord.right(0), Coord.bottom(0)));
 		}
 
 		@Override
@@ -60,10 +59,10 @@ public class GuiManager extends WFrame {
 		}
 
 		@Override
-		public void mouseScrolled(final WEvent ev, final Area pgp, final Point p, final int scroll) {
+		public boolean mouseScrolled(final WEvent ev, final Area pgp, final Point p, final int scroll) {
 			this.offset.stop().add(Easings.easeOutSine.move(.25f, Math.min(0, Math.max(-(GuiManager.this.size/4)*80, this.offset.get()+scroll)))).start();
 
-			super.mouseScrolled(ev, pgp, p, scroll);
+			return super.mouseScrolled(ev, pgp, p, scroll);
 		}
 
 		public class GalleryPanel extends WPanel {
@@ -76,20 +75,21 @@ public class GuiManager extends WFrame {
 				final Area a = getGuiPosition(pgp);
 
 				int i;
-				while ((i = this.widgets.size()) <= Math.min(((a.h() - GuiGallery.this.offset.get())/80)*4, GuiManager.this.size))
+				while ((i = getContainer().size())<=Math.min(((a.h()-GuiGallery.this.offset.get())/80)*4, GuiManager.this.size))
 					add(i);
 
 				super.update(ev, pgp, p);
 			}
 
 			public void add(final int i) {
-				add(new GalleryLabel(new RArea(Coord.pleft((i%4)/4f), Coord.top((i/4)*80), Coord.pwidth(1f/4f), Coord.height(80)), i));
+				add(new GalleryLabel(new R(Coord.pleft((i%4)/4f), Coord.top((i/4)*80), Coord.pwidth(1f/4f), Coord.height(80)), i));
 			}
 
 			public class GalleryLabel extends SignPicLabel {
 				protected EntryId Default = new EntryId("!signpic:textures/logo.png[]");
 
 				protected int i;
+
 				public GalleryLabel(final R position, final int i) {
 					super(position);
 					this.i = i;
@@ -103,7 +103,7 @@ public class GuiManager extends WFrame {
 
 				@Override
 				public void update(final WEvent ev, final Area pgp, final Point p) {
-					if (this.entryId==null || this.entryId==this.Default) {
+					if (this.entryId==null||this.entryId==this.Default) {
 						final SignData e = GuiManager.this.data.get(this.i);
 						if (e!=null) {
 							setEntryId(new EntryId(e.sign));
