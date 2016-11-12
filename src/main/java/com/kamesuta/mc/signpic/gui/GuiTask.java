@@ -40,10 +40,10 @@ public class GuiTask extends WPanel {
 	}
 
 	protected boolean oshow;
-	protected MCoord oright;
+	protected MCoord oright = MCoord.right(0f);;
 
 	protected boolean show = true;
-	protected MCoord right;
+	protected MCoord right = MCoord.pright(0f);
 
 	@Override
 	protected void initWidget() {
