@@ -17,6 +17,7 @@ import com.kamesuta.mc.bnnwidget.position.Area;
 import com.kamesuta.mc.bnnwidget.position.Coord;
 import com.kamesuta.mc.bnnwidget.position.Point;
 import com.kamesuta.mc.bnnwidget.position.R;
+import com.kamesuta.mc.signpic.Reference;
 import com.kamesuta.mc.signpic.entry.EntryId;
 import com.kamesuta.mc.signpic.gui.SignPicLabel;
 import com.kamesuta.mc.signpic.plugin.SignData;
@@ -79,7 +80,7 @@ public class GuiManager extends WFrame {
 		}
 
 		public class GalleryPanel extends WPanel {
-			protected Map<GalleryLabel, Boolean> labels = Maps.newHashMap();
+			protected Map<GalleryLabel, Boolean> labels = Maps.newLinkedHashMap();
 
 			public GalleryPanel(final R position) {
 				super(position);
@@ -90,6 +91,19 @@ public class GuiManager extends WFrame {
 					line.setValue(select);
 			}
 
+			public void selectSoFar(final int number) {
+				int i = 0;
+				boolean select = false;
+				Reference.logger.info(this.labels.size());
+				for (final Map.Entry<GalleryLabel, Boolean> line : this.labels.entrySet()) {
+					if (select&&i<=number)
+						line.setValue(true);
+					if (!select)
+						select = line.getValue();
+					i++;
+				}
+			}
+
 			@Override
 			public void update(final WEvent ev, final Area pgp, final Point p) {
 				final Area a = getGuiPosition(pgp);
@@ -98,9 +112,8 @@ public class GuiManager extends WFrame {
 				while ((i = getContainer().size())<=Math.min(((a.h()-GuiGallery.this.offset.get())/80)*4, GuiManager.this.size))
 					add(i);
 
-				for (final Map.Entry<GalleryLabel, Boolean> line : this.labels.entrySet()) {
+				for (final Map.Entry<GalleryLabel, Boolean> line : this.labels.entrySet())
 					line.getKey().selected = line.getValue();
-				}
 
 				super.update(ev, pgp, p);
 			}
@@ -219,8 +232,11 @@ public class GuiManager extends WFrame {
 					final Area a = getGuiPosition(pgp);
 					if (a.pointInside(p)&&button==0) {
 						if (!this.selected) {
-							if (!GuiScreen.isCtrlKeyDown())
-								selectAll(false);
+							if (!GuiScreen.isShiftKeyDown()) {
+								if (!GuiScreen.isCtrlKeyDown())
+									selectAll(false);
+							} else
+								selectSoFar(this.i);
 							GalleryPanel.this.labels.put(this, true);
 						} else
 							selectAll(false);
