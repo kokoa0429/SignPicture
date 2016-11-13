@@ -192,7 +192,8 @@ public class WFrame extends GuiScreen implements WContainer<WCommon> {
 		getContentPane().update(this.event, gp, p);
 		final int m = Mouse.getEventButton();
 		if (this.mousebutton!=m) {
-			getContentPane().mouseReleased(this.event, gp, p, this.mousebutton);
+			if (!Mouse.isButtonDown(this.mousebutton))
+				getContentPane().mouseReleased(this.event, gp, p, this.mousebutton);
 			if (m>=0)
 				this.mousebutton = m;
 		}

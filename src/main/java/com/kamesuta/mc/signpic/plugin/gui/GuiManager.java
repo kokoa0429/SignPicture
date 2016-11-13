@@ -1,5 +1,7 @@
 package com.kamesuta.mc.signpic.plugin.gui;
 
+import static org.lwjgl.opengl.GL11.*;
+
 import java.util.Map;
 
 import org.apache.commons.lang3.math.NumberUtils;
@@ -19,6 +21,7 @@ import com.kamesuta.mc.signpic.gui.SignPicLabel;
 import com.kamesuta.mc.signpic.plugin.SignData;
 import com.kamesuta.mc.signpic.plugin.packet.PacketHandler;
 import com.kamesuta.mc.signpic.plugin.packet.PacketHandler.SignPicturePacket;
+import com.kamesuta.mc.signpic.render.RenderHelper;
 
 public class GuiManager extends WFrame {
 	public String key;
@@ -85,10 +88,54 @@ public class GuiManager extends WFrame {
 				add(new GalleryLabel(new R(Coord.pleft((i%4)/4f), Coord.top((i/4)*80), Coord.pwidth(1f/4f), Coord.height(80)), i));
 			}
 
+			protected Area selectArea;
+			private boolean drawSelectArea;
+			private Point startSelectPoint;
+
+			@Override
+			public boolean mouseDragged(final WEvent ev, final Area pgp, final Point p, final int button, final long time) {
+				if (button<=1&&time>100&&this.startSelectPoint!=null) {
+					this.drawSelectArea = true;
+					this.selectArea = new Area(this.startSelectPoint.x(), this.startSelectPoint.y(), p.x(), p.y());
+				}
+				return super.mouseDragged(ev, pgp, p, button, time);
+			}
+
+			@Override
+			public boolean mouseClicked(final WEvent ev, final Area pgp, final Point p, final int button) {
+				final Area a = getGuiPosition(pgp);
+				if (button<=1) {
+					this.selectArea = null;
+					this.startSelectPoint = p;
+				}
+				return super.mouseClicked(ev, pgp, p, button);
+			}
+
+			@Override
+			public boolean mouseReleased(final WEvent ev, final Area pgp, final Point p, final int button) {
+				this.drawSelectArea = false;
+				return super.mouseReleased(ev, pgp, p, button);
+			}
+
+			@Override
+			public void draw(final WEvent ev, final Area pgp, final Point p, final float frame, final float popacity) {
+				super.draw(ev, pgp, p, frame, popacity);
+				if (this.drawSelectArea&&this.selectArea!=null) {
+					final Area a = getGuiPosition(this.selectArea);
+					glColor4f(.25f, .3f, 1, .4f);
+					RenderHelper.startShape();
+					draw(a, GL_QUADS);
+					glLineWidth(1.5f);
+					glColor4f(.2f, .3f, 1, .6f);
+					draw(a, GL_LINE_LOOP);
+				}
+			}
+
 			public class GalleryLabel extends SignPicLabel {
 				protected EntryId Default = new EntryId("!signpic:textures/logo.png[]");
 
 				protected int i;
+				protected boolean selected;
 
 				public GalleryLabel(final R position, final int i) {
 					super(position);
@@ -109,6 +156,37 @@ public class GuiManager extends WFrame {
 							setEntryId(new EntryId(e.sign));
 						}
 					}
+
+					if (GalleryPanel.this.selectArea!=null) {
+						final Area a = getGuiPosition(pgp);
+						if (GalleryPanel.this.selectArea.areaOverlap(a))
+							this.selected = true;
+					}
+				}
+
+				@Override
+				public void draw(final WEvent ev, final Area pgp, final Point p, final float frame, final float opacity) {
+					super.draw(ev, pgp, p, frame, opacity);
+					final Area a = getGuiPosition(pgp);
+					if (a.pointInside(p)||this.selected) {
+						glColor4f(.4f, .7f, 1, this.selected ? .7f : .4f);
+						RenderHelper.startShape();
+						draw(a, GL_QUADS);
+					}
+					if (this.selected) {
+						glLineWidth(3f);
+						glColor4f(.4f, .7f, 1, .8f);
+						RenderHelper.startShape();
+						draw(a, GL_LINE_LOOP);
+					}
+				}
+
+				@Override
+				public boolean mouseClicked(final WEvent ev, final Area pgp, final Point p, final int button) {
+					final Area a = getGuiPosition(pgp);
+					if (a.pointInside(p))
+						this.selected = !this.selected;
+					return super.mouseClicked(ev, pgp, p, button);
 				}
 			}
 		}
