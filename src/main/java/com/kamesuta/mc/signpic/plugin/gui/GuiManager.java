@@ -172,7 +172,7 @@ public class GuiManager extends WFrame {
 				if (this.drawSelectArea&&this.selectArea!=null) {
 					glColor4f(.25f, .3f, 1, .4f);
 					RenderHelper.startShape();
-					draw(this.selectArea, GL_QUADS);
+					draw(getGuiPosition(this.selectArea), GL_QUADS);
 					glLineWidth(1.5f);
 					glColor4f(.2f, .3f, 1, .6f);
 					draw(this.selectArea, GL_LINE_LOOP);
@@ -214,9 +214,7 @@ public class GuiManager extends WFrame {
 
 					if (GalleryPanel.this.selectArea!=null) {
 						final Area a = getGuiPosition(pgp);
-						if (GalleryPanel.this.selectArea.areaOverlap(a)) {
-							GalleryPanel.this.labels.put(this, true);
-						}
+						GalleryPanel.this.labels.put(this, GalleryPanel.this.selectArea.areaOverlap(a));
 					}
 				}
 
