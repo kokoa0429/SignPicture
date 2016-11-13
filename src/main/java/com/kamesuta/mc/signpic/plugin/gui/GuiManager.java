@@ -2,11 +2,13 @@ package com.kamesuta.mc.signpic.plugin.gui;
 
 import static org.lwjgl.opengl.GL11.*;
 
+import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.lang3.math.NumberUtils;
 import org.lwjgl.input.Keyboard;
 
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.kamesuta.mc.bnnwidget.WEvent;
 import com.kamesuta.mc.bnnwidget.WFrame;
@@ -84,6 +86,14 @@ public class GuiManager extends WFrame {
 
 			public GalleryPanel(final R position) {
 				super(position);
+			}
+
+			public List<GalleryLabel> getSelectLabel() {
+				final List<GalleryLabel> list = Lists.newLinkedList();
+				for (final Map.Entry<GalleryLabel, Boolean> line : this.labels.entrySet())
+					if (line.getValue())
+						list.add(line.getKey());
+				return list;
 			}
 
 			public void selectAll(final boolean select) {
