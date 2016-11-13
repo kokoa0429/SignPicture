@@ -146,7 +146,7 @@ public class WFrame extends GuiScreen implements WContainer<WCommon> {
 		super.drawScreen(mousex, mousey, f);
 	}
 
-	protected int mousebutton;
+	protected int mousebutton = -1;
 
 	@Override
 	protected void mouseClicked(final int x, final int y, final int button) throws IOException {
@@ -194,7 +194,7 @@ public class WFrame extends GuiScreen implements WContainer<WCommon> {
 		if (this.mousebutton!=m) {
 			if (!Mouse.isButtonDown(this.mousebutton))
 				getContentPane().mouseReleased(this.event, gp, p, this.mousebutton);
-			if (m>=0)
+			if (m>=-1)
 				this.mousebutton = m;
 		}
 		if (!p.equals(this.mouselast)) {

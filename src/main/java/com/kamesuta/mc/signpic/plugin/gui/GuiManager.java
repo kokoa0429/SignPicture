@@ -101,6 +101,7 @@ public class GuiManager extends WFrame {
 				for (final Map.Entry<GalleryLabel, Boolean> line : this.labels.entrySet()) {
 					line.getKey().selected = line.getValue();
 				}
+
 				super.update(ev, pgp, p);
 			}
 
@@ -146,13 +147,12 @@ public class GuiManager extends WFrame {
 			public void draw(final WEvent ev, final Area pgp, final Point p, final float frame, final float popacity) {
 				super.draw(ev, pgp, p, frame, popacity);
 				if (this.drawSelectArea&&this.selectArea!=null) {
-					final Area a = getGuiPosition(this.selectArea);
 					glColor4f(.25f, .3f, 1, .4f);
 					RenderHelper.startShape();
-					draw(a, GL_QUADS);
+					draw(this.selectArea, GL_QUADS);
 					glLineWidth(1.5f);
 					glColor4f(.2f, .3f, 1, .6f);
-					draw(a, GL_LINE_LOOP);
+					draw(this.selectArea, GL_LINE_LOOP);
 				}
 			}
 
