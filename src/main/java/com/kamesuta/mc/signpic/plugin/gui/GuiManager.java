@@ -86,7 +86,6 @@ public class GuiManager extends WFrame {
 		}
 
 		public class MouseOverPanel extends WPanel {
-			protected Point p;
 			protected SignData d;
 			protected ContentId i;
 			protected String leftURI;
@@ -95,23 +94,20 @@ public class GuiManager extends WFrame {
 				super(position);
 			}
 
-			public void overlay(final Point p, final SignData data) {
+			public void setData(final SignData data) {
 				this.d = data;
-				this.i = new EntryId(data.sign).getContentId();
-				final String uri = this.i.getURI();
-				this.leftURI = uri.length()>30 ? uri.substring(0, 30)+"..." : uri;
-				overlay(p);
-			}
-
-			public void overlay(final Point p) {
-				this.p = p;
+				if (this.d!=null) {
+					this.i = new EntryId(data.sign).getContentId();
+					final String uri = this.i.getURI();
+					this.leftURI = uri.length()>30 ? uri.substring(0, 30)+"..." : uri;
+				}
 			}
 
 			@Override
 			public void draw(final WEvent ev, final Area pgp, final Point p, final float frame, final float popacity) {
 				final Area a = getGuiPosition(pgp);
-				if (this.p!=null&&this.d!=null) {
-					final float x1 = p.x()<a.x2()-180 ? p.x()+8 : p.x()-188;
+				if (this.d!=null) {
+					final float x1 = p.x()<a.x2()-180 ? p.x()+8 : p.x()-180;
 					final float x2 = p.x()+180<a.x2() ? p.x()+180 : p.x()-8;
 					final float y1 = p.y()>30 ? p.y()-30 : p.y();
 					final float y2 = p.y()>30 ? p.y() : p.y()+30;
@@ -133,6 +129,7 @@ public class GuiManager extends WFrame {
 
 		public class GalleryPanel extends WPanel {
 			protected Map<GalleryLabel, Boolean> labels = Maps.newLinkedHashMap();
+			protected boolean labelsMouseInside = false;
 
 			public GalleryPanel(final R position) {
 				super(position);
@@ -171,9 +168,12 @@ public class GuiManager extends WFrame {
 				while ((i = getContainer().size())<=Math.min(((a.h()-GuiGallery.this.offset.get())/80)*4, GuiManager.this.size))
 					add(i);
 
-				for (final Map.Entry<GalleryLabel, Boolean> line : this.labels.entrySet())
+				for (final Map.Entry<GalleryLabel, Boolean> line : this.labels.entrySet()) {
 					line.getKey().selected = line.getValue();
-
+				}
+				if (!this.labelsMouseInside)
+					GuiGallery.this.overPanel.setData(null);
+				this.labelsMouseInside = false;
 				super.update(ev, pgp, p);
 			}
 
@@ -257,8 +257,6 @@ public class GuiManager extends WFrame {
 					PacketHandler.instance.sendPacket(new SignPicturePacket("data", GuiManager.this.key, Integer.toString(this.i)));
 				}
 
-				private boolean overlayData;
-
 				@Override
 				public void update(final WEvent ev, final Area pgp, final Point p) {
 					final Area a = getGuiPosition(pgp);
@@ -271,16 +269,24 @@ public class GuiManager extends WFrame {
 					if (GalleryPanel.this.selectArea!=null)
 						GalleryPanel.this.labels.put(this, GalleryPanel.this.selectArea.areaOverlap(a));
 
-					if (a.pointInside(p)&&e!=null)
-						if (this.overlayData)
-							GuiGallery.this.overPanel.overlay(p);
-						else {
-							GuiGallery.this.overPanel.overlay(p, e);
-							this.overlayData = true;
-						}
-					else
-						this.overlayData = false;
+					if (a.pointInside(p)) {
+						GalleryPanel.this.labelsMouseInside = true;
+						if (this.entryId==this.Default)
+							GuiGallery.this.overPanel.setData(null);
+						if (e!=null)
+							GuiGallery.this.overPanel.setData(e);
+					}
+				}
 
+				public boolean overlay(final WEvent ev, final Area pgp, final Point p) {
+					final Area a = getGuiPosition(pgp);
+					final SignData e = GuiManager.this.data.get(this.i);
+					if (a.pointInside(p)) {
+						if (e!=null)
+							GuiGallery.this.overPanel.setData(e);
+						return true;
+					}
+					return false;
 				}
 
 				@Override
