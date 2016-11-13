@@ -308,12 +308,21 @@ public class GuiManager extends WFrame {
 									selectAll(false);
 							} else
 								selectSoFar(this.i);
-						} else
-							selectAll(false);
-						if (!isDefault())
-							GalleryPanel.this.labels.put(this, true);
+							select();
+						} else {
+							if (!GuiScreen.isCtrlKeyDown()) {
+								selectAll(false);
+								select();
+							} else
+								GalleryPanel.this.labels.put(this, false);
+						}
 					}
 					return super.mouseClicked(ev, pgp, p, button)||a.pointInside(p);
+				}
+
+				public void select() {
+					if (!isDefault())
+						GalleryPanel.this.labels.put(this, true);
 				}
 			}
 		}
