@@ -5,6 +5,7 @@ import static org.lwjgl.opengl.GL11.*;
 import java.util.Map;
 
 import org.apache.commons.lang3.math.NumberUtils;
+import org.lwjgl.input.Keyboard;
 
 import com.google.common.collect.Maps;
 import com.kamesuta.mc.bnnwidget.WEvent;
@@ -22,6 +23,8 @@ import com.kamesuta.mc.signpic.plugin.SignData;
 import com.kamesuta.mc.signpic.plugin.packet.PacketHandler;
 import com.kamesuta.mc.signpic.plugin.packet.PacketHandler.SignPicturePacket;
 import com.kamesuta.mc.signpic.render.RenderHelper;
+
+import net.minecraft.client.gui.GuiScreen;
 
 public class GuiManager extends WFrame {
 	public String key;
@@ -58,6 +61,7 @@ public class GuiManager extends WFrame {
 
 		@Override
 		protected void initWidget() {
+			Keyboard.enableRepeatEvents(true);
 			add(this.panel);
 		}
 
@@ -68,9 +72,22 @@ public class GuiManager extends WFrame {
 			return super.mouseScrolled(ev, pgp, p, scroll);
 		}
 
+		@Override
+		public boolean onClosing(final WEvent ev, final Area pgp, final Point p) {
+			Keyboard.enableRepeatEvents(false);
+			return super.onClosing(ev, pgp, p);
+		}
+
 		public class GalleryPanel extends WPanel {
+			protected Map<GalleryLabel, Boolean> labels = Maps.newHashMap();
+
 			public GalleryPanel(final R position) {
 				super(position);
+			}
+
+			public void selectAll(final boolean select) {
+				for (final Map.Entry<GalleryLabel, Boolean> line : this.labels.entrySet())
+					line.setValue(select);
 			}
 
 			@Override
@@ -81,11 +98,16 @@ public class GuiManager extends WFrame {
 				while ((i = getContainer().size())<=Math.min(((a.h()-GuiGallery.this.offset.get())/80)*4, GuiManager.this.size))
 					add(i);
 
+				for (final Map.Entry<GalleryLabel, Boolean> line : this.labels.entrySet()) {
+					line.getKey().selected = line.getValue();
+				}
 				super.update(ev, pgp, p);
 			}
 
 			public void add(final int i) {
-				add(new GalleryLabel(new R(Coord.pleft((i%4)/4f), Coord.top((i/4)*80+10), Coord.pwidth(1f/4f), Coord.height(80)), i));
+				final GalleryLabel label = new GalleryLabel(new R(Coord.pleft((i%4)/4f), Coord.top((i/4)*80), Coord.pwidth(1f/4.3f), Coord.height(80)), i);
+				add(label);
+				this.labels.put(label, false);
 			}
 
 			protected Area selectArea;
@@ -103,10 +125,13 @@ public class GuiManager extends WFrame {
 
 			@Override
 			public boolean mouseClicked(final WEvent ev, final Area pgp, final Point p, final int button) {
-				final Area a = getGuiPosition(pgp);
 				if (button<=1) {
 					this.selectArea = null;
 					this.startSelectPoint = p;
+					if (!super.mouseClicked(ev, pgp, p, button)) {
+						selectAll(false);
+						return true;
+					}
 				}
 				return super.mouseClicked(ev, pgp, p, button);
 			}
@@ -129,6 +154,13 @@ public class GuiManager extends WFrame {
 					glColor4f(.2f, .3f, 1, .6f);
 					draw(a, GL_LINE_LOOP);
 				}
+			}
+
+			@Override
+			public boolean keyTyped(final WEvent ev, final Area pgp, final Point p, final char c, final int keycode) {
+				if (GuiScreen.isCtrlKeyDown()&&keycode==Keyboard.KEY_A)
+					selectAll(true);
+				return super.keyTyped(ev, pgp, p, c, keycode);
 			}
 
 			public class GalleryLabel extends SignPicLabel {
@@ -159,8 +191,9 @@ public class GuiManager extends WFrame {
 
 					if (GalleryPanel.this.selectArea!=null) {
 						final Area a = getGuiPosition(pgp);
-						if (GalleryPanel.this.selectArea.areaOverlap(a))
-							this.selected = true;
+						if (GalleryPanel.this.selectArea.areaOverlap(a)) {
+							GalleryPanel.this.labels.put(this, true);
+						}
 					}
 				}
 
@@ -184,9 +217,16 @@ public class GuiManager extends WFrame {
 				@Override
 				public boolean mouseClicked(final WEvent ev, final Area pgp, final Point p, final int button) {
 					final Area a = getGuiPosition(pgp);
-					if (a.pointInside(p))
-						this.selected = !this.selected;
-					return super.mouseClicked(ev, pgp, p, button);
+					if (a.pointInside(p)&&button==0) {
+						if (!this.selected) {
+							if (!GuiScreen.isCtrlKeyDown())
+								selectAll(false);
+							GalleryPanel.this.labels.put(this, true);
+						} else
+							selectAll(false);
+						GalleryPanel.this.labels.put(this, true);
+					}
+					return super.mouseClicked(ev, pgp, p, button)||a.pointInside(p);
 				}
 			}
 		}
