@@ -241,8 +241,6 @@ public class GuiManager extends WFrame {
 			}
 
 			public class GalleryLabel extends SignPicLabel {
-				protected EntryId Default = new EntryId("!signpic:textures/logo.png[]");
-
 				protected int i;
 				protected boolean selected;
 
@@ -251,49 +249,41 @@ public class GuiManager extends WFrame {
 					this.i = i;
 				}
 
+				public boolean isDefault() {
+					return this.i==0;
+				}
+
 				@Override
 				public void onAdded() {
-					setEntryId(this.Default);
+					if (this.i==0)
+						setEntryId(new EntryId("!signpic:textures/logo.png[]"));
 					PacketHandler.instance.sendPacket(new SignPicturePacket("data", GuiManager.this.key, Integer.toString(this.i)));
 				}
 
 				@Override
 				public void update(final WEvent ev, final Area pgp, final Point p) {
 					final Area a = getGuiPosition(pgp);
-					final SignData e = GuiManager.this.data.get(this.i);
-					if (this.entryId==null||this.entryId==this.Default) {
-						if (e!=null)
-							setEntryId(new EntryId(e.sign));
-					}
-
-					if (GalleryPanel.this.selectArea!=null)
-						GalleryPanel.this.labels.put(this, GalleryPanel.this.selectArea.areaOverlap(a));
+					final SignData e = GuiManager.this.data.get(this.i-1);
+					if (this.entryId==null&&e!=null)
+						setEntryId(new EntryId(e.sign));
 
 					if (a.pointInside(p)) {
 						GalleryPanel.this.labelsMouseInside = true;
-						if (this.entryId==this.Default)
+						if (isDefault())
 							GuiGallery.this.overPanel.setData(null);
 						if (e!=null)
 							GuiGallery.this.overPanel.setData(e);
 					}
-				}
 
-				public boolean overlay(final WEvent ev, final Area pgp, final Point p) {
-					final Area a = getGuiPosition(pgp);
-					final SignData e = GuiManager.this.data.get(this.i);
-					if (a.pointInside(p)) {
-						if (e!=null)
-							GuiGallery.this.overPanel.setData(e);
-						return true;
-					}
-					return false;
+					if (GalleryPanel.this.selectArea!=null)
+						GalleryPanel.this.labels.put(this, GalleryPanel.this.selectArea.areaOverlap(a));
 				}
 
 				@Override
 				public void draw(final WEvent ev, final Area pgp, final Point p, final float frame, final float opacity) {
 					super.draw(ev, pgp, p, frame, opacity);
 					final Area a = getGuiPosition(pgp);
-					if (this.entryId!=this.Default) {
+					if (!isDefault()) {
 						if (a.pointInside(p)||this.selected) {
 							glColor4f(.4f, .7f, 1, this.selected ? .7f : .4f);
 							RenderHelper.startShape();
@@ -320,7 +310,7 @@ public class GuiManager extends WFrame {
 								selectSoFar(this.i);
 						} else
 							selectAll(false);
-						if (this.entryId!=this.Default)
+						if (!isDefault())
 							GalleryPanel.this.labels.put(this, true);
 					}
 					return super.mouseClicked(ev, pgp, p, button)||a.pointInside(p);
