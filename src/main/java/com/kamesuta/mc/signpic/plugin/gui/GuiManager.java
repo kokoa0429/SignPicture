@@ -85,7 +85,7 @@ public class GuiManager extends WFrame {
 			}
 
 			public void add(final int i) {
-				add(new GalleryLabel(new R(Coord.pleft((i%4)/4f), Coord.top((i/4)*80), Coord.pwidth(1f/4f), Coord.height(80)), i));
+				add(new GalleryLabel(new R(Coord.pleft((i%4)/4f), Coord.top((i/4)*80+10), Coord.pwidth(1f/4f), Coord.height(80)), i));
 			}
 
 			protected Area selectArea;

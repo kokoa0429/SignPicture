@@ -41,19 +41,19 @@ public class Area {
 	}
 
 	public float minX() {
-		return Math.min(this.x1, this.x2);
+		return Math.min(x1(), x2());
 	}
 
 	public float maxX() {
-		return Math.max(this.x1, this.x2);
+		return Math.max(x1(), x2());
 	}
 
 	public float minY() {
-		return Math.min(this.y1, this.y2);
+		return Math.min(y1(), y2());
 	}
 
 	public float maxY() {
-		return Math.max(this.y1, this.y2);
+		return Math.max(y1(), y2());
 	}
 
 	public Area child(final R p) {
