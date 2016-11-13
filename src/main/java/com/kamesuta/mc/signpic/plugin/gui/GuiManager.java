@@ -19,8 +19,8 @@ import com.kamesuta.mc.bnnwidget.position.Area;
 import com.kamesuta.mc.bnnwidget.position.Coord;
 import com.kamesuta.mc.bnnwidget.position.Point;
 import com.kamesuta.mc.bnnwidget.position.R;
-import com.kamesuta.mc.signpic.Reference;
 import com.kamesuta.mc.signpic.entry.EntryId;
+import com.kamesuta.mc.signpic.entry.content.ContentId;
 import com.kamesuta.mc.signpic.gui.SignPicLabel;
 import com.kamesuta.mc.signpic.plugin.SignData;
 import com.kamesuta.mc.signpic.plugin.packet.PacketHandler;
@@ -28,6 +28,7 @@ import com.kamesuta.mc.signpic.plugin.packet.PacketHandler.SignPicturePacket;
 import com.kamesuta.mc.signpic.render.RenderHelper;
 
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 
 public class GuiManager extends WFrame {
 	public String key;
@@ -54,18 +55,21 @@ public class GuiManager extends WFrame {
 
 	public class GuiGallery extends WPanel {
 		protected GalleryPanel panel;
+		protected MouseOverPanel overPanel;
 		protected MCoord offset;
 
 		public GuiGallery(final R position) {
 			super(position);
 			this.offset = MCoord.top(0);
 			this.panel = new GalleryPanel(new R(Coord.left(0), this.offset, Coord.right(0), Coord.bottom(0)));
+			this.overPanel = new MouseOverPanel(new R(Coord.left(0), Coord.top(0), Coord.right(0), Coord.bottom(0)));
 		}
 
 		@Override
 		protected void initWidget() {
 			Keyboard.enableRepeatEvents(true);
 			add(this.panel);
+			add(this.overPanel);
 		}
 
 		@Override
@@ -79,6 +83,52 @@ public class GuiManager extends WFrame {
 		public boolean onClosing(final WEvent ev, final Area pgp, final Point p) {
 			Keyboard.enableRepeatEvents(false);
 			return super.onClosing(ev, pgp, p);
+		}
+
+		public class MouseOverPanel extends WPanel {
+			protected Point p;
+			protected SignData d;
+			protected ContentId i;
+			protected String leftURI;
+
+			public MouseOverPanel(final R position) {
+				super(position);
+			}
+
+			public void overlay(final Point p, final SignData data) {
+				this.d = data;
+				this.i = new EntryId(data.sign).getContentId();
+				final String uri = this.i.getURI();
+				this.leftURI = uri.length()>30 ? uri.substring(0, 30)+"..." : uri;
+				overlay(p);
+			}
+
+			public void overlay(final Point p) {
+				this.p = p;
+			}
+
+			@Override
+			public void draw(final WEvent ev, final Area pgp, final Point p, final float frame, final float popacity) {
+				final Area a = getGuiPosition(pgp);
+				if (this.p!=null&&this.d!=null) {
+					final float x1 = p.x()<a.x2()-180 ? p.x()+8 : p.x()-188;
+					final float x2 = p.x()+180<a.x2() ? p.x()+180 : p.x()-8;
+					final float y1 = p.y()>30 ? p.y()-30 : p.y();
+					final float y2 = p.y()>30 ? p.y() : p.y()+30;
+					final Area overlay = new Area(x1, y1, x2, y2);
+					glColor4f(0, 0, 0, 1);
+					RenderHelper.startShape();
+					draw(overlay, GL_QUADS);
+					glLineWidth(4f);
+					glColor4f(.1f, 0, .2f, 1);
+					draw(overlay, GL_LINE_LOOP);
+					RenderHelper.startTexture();
+					drawString("Owner:"+this.d.owner_name, overlay.minX()+3, overlay.minY()+4, 0xffffff);
+					drawString(this.leftURI, overlay.minX()+3, overlay.minY()+17, 0xffffff);
+				}
+
+				super.draw(ev, pgp, p, frame, popacity);
+			}
 		}
 
 		public class GalleryPanel extends WPanel {
@@ -104,7 +154,6 @@ public class GuiManager extends WFrame {
 			public void selectSoFar(final int number) {
 				int i = 0;
 				boolean select = false;
-				Reference.logger.info(this.labels.size());
 				for (final Map.Entry<GalleryLabel, Boolean> line : this.labels.entrySet()) {
 					if (select&&i<=number)
 						line.setValue(true);
@@ -150,7 +199,6 @@ public class GuiManager extends WFrame {
 			@Override
 			public boolean mouseClicked(final WEvent ev, final Area pgp, final Point p, final int button) {
 				if (button<=1) {
-					this.selectArea = null;
 					this.startSelectPoint = p;
 					if (!super.mouseClicked(ev, pgp, p, button)) {
 						selectAll(false);
@@ -163,6 +211,7 @@ public class GuiManager extends WFrame {
 			@Override
 			public boolean mouseReleased(final WEvent ev, final Area pgp, final Point p, final int button) {
 				this.drawSelectArea = false;
+				this.selectArea = null;
 				return super.mouseReleased(ev, pgp, p, button);
 			}
 
@@ -172,7 +221,12 @@ public class GuiManager extends WFrame {
 				if (this.drawSelectArea&&this.selectArea!=null) {
 					glColor4f(.25f, .3f, 1, .4f);
 					RenderHelper.startShape();
-					draw(getGuiPosition(this.selectArea), GL_QUADS);
+					w.begin(GL_QUADS, DefaultVertexFormats.POSITION);
+					w.pos(this.selectArea.minX(), this.selectArea.minY(), 0).endVertex();
+					w.pos(this.selectArea.minX(), this.selectArea.maxY(), 0).endVertex();
+					w.pos(this.selectArea.maxX(), this.selectArea.maxY(), 0).endVertex();
+					w.pos(this.selectArea.maxX(), this.selectArea.minY(), 0).endVertex();
+					t.draw();
 					glLineWidth(1.5f);
 					glColor4f(.2f, .3f, 1, .6f);
 					draw(this.selectArea, GL_LINE_LOOP);
@@ -203,35 +257,48 @@ public class GuiManager extends WFrame {
 					PacketHandler.instance.sendPacket(new SignPicturePacket("data", GuiManager.this.key, Integer.toString(this.i)));
 				}
 
+				private boolean overlayData;
+
 				@Override
 				public void update(final WEvent ev, final Area pgp, final Point p) {
+					final Area a = getGuiPosition(pgp);
+					final SignData e = GuiManager.this.data.get(this.i);
 					if (this.entryId==null||this.entryId==this.Default) {
-						final SignData e = GuiManager.this.data.get(this.i);
-						if (e!=null) {
+						if (e!=null)
 							setEntryId(new EntryId(e.sign));
-						}
 					}
 
-					if (GalleryPanel.this.selectArea!=null) {
-						final Area a = getGuiPosition(pgp);
+					if (GalleryPanel.this.selectArea!=null)
 						GalleryPanel.this.labels.put(this, GalleryPanel.this.selectArea.areaOverlap(a));
-					}
+
+					if (a.pointInside(p)&&e!=null)
+						if (this.overlayData)
+							GuiGallery.this.overPanel.overlay(p);
+						else {
+							GuiGallery.this.overPanel.overlay(p, e);
+							this.overlayData = true;
+						}
+					else
+						this.overlayData = false;
+
 				}
 
 				@Override
 				public void draw(final WEvent ev, final Area pgp, final Point p, final float frame, final float opacity) {
 					super.draw(ev, pgp, p, frame, opacity);
 					final Area a = getGuiPosition(pgp);
-					if (a.pointInside(p)||this.selected) {
-						glColor4f(.4f, .7f, 1, this.selected ? .7f : .4f);
-						RenderHelper.startShape();
-						draw(a, GL_QUADS);
-					}
-					if (this.selected) {
-						glLineWidth(3f);
-						glColor4f(.4f, .7f, 1, .8f);
-						RenderHelper.startShape();
-						draw(a, GL_LINE_LOOP);
+					if (this.entryId!=this.Default) {
+						if (a.pointInside(p)||this.selected) {
+							glColor4f(.4f, .7f, 1, this.selected ? .7f : .4f);
+							RenderHelper.startShape();
+							draw(a, GL_QUADS);
+						}
+						if (this.selected) {
+							glLineWidth(3f);
+							glColor4f(.4f, .7f, 1, .8f);
+							RenderHelper.startShape();
+							draw(a, GL_LINE_LOOP);
+						}
 					}
 				}
 
@@ -245,10 +312,10 @@ public class GuiManager extends WFrame {
 									selectAll(false);
 							} else
 								selectSoFar(this.i);
-							GalleryPanel.this.labels.put(this, true);
 						} else
 							selectAll(false);
-						GalleryPanel.this.labels.put(this, true);
+						if (this.entryId!=this.Default)
+							GalleryPanel.this.labels.put(this, true);
 					}
 					return super.mouseClicked(ev, pgp, p, button)||a.pointInside(p);
 				}
