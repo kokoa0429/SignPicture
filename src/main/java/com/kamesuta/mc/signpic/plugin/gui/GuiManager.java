@@ -13,7 +13,6 @@ import com.google.common.collect.Maps;
 import com.kamesuta.mc.bnnwidget.WEvent;
 import com.kamesuta.mc.bnnwidget.WFrame;
 import com.kamesuta.mc.bnnwidget.WPanel;
-import com.kamesuta.mc.bnnwidget.component.MLabel;
 import com.kamesuta.mc.bnnwidget.motion.Easings;
 import com.kamesuta.mc.bnnwidget.motion.MCoord;
 import com.kamesuta.mc.bnnwidget.position.Area;
@@ -142,18 +141,21 @@ public class GuiManager extends WFrame {
 						@Override
 						protected void initWidget() {
 
-							add(new MLabel(new R(Coord.left(0), Coord.top(0), Coord.height(20), Coord.width(80)), "sushi") {
+							add(new ClickMenuPanel(new R(Coord.left(1), Coord.top(3), Coord.height(15), Coord.width(77.7f)), "sushi") {
 								{
-									setColor(0x00000);
+									setEmphasis(true);
 								}
 
 							});
 
-							add(new MLabel(new R(Coord.left(0), Coord.top(20), Coord.height(20), Coord.width(80)), "sushi") {
-								{
-									setColor(0x00000);
-								}
+							add(new ClickMenuPanel(new R(Coord.left(1), Coord.top(18), Coord.height(15), Coord.width(77.7f)), "sushi") {
+
 							});
+
+							add(new ClickMenuPanel(new R(Coord.left(1), Coord.top(33), Coord.height(15), Coord.width(77.7f)), "sushi") {
+
+							});
+
 							super.initWidget();
 						}
 					});
@@ -250,7 +252,6 @@ public class GuiManager extends WFrame {
 
 			public void add(final int i, final int row) {
 				final GalleryLabel label = new GalleryLabel(new R(Coord.pleft((i%row)/(float) row), Coord.top((i/row)*((GuiManager.this.height/row)+3)), Coord.pwidth(1f/(row+.3f)), Coord.height(GuiManager.this.height*(1f/(row+.3f)))), i);
-				//				final GalleryLabel label = new GalleryLabel(new R(Coord.width(GuiManager.this.width/row), Coord.height(GuiManager.this.height/(GuiManager.this.height/(GuiManager.this.width/row))), Coord.ptop(.5f), Coord.pleft(.5f)).child(Coord.ptop(-.5f), Coord.pleft(-.5f)), i);
 				add(label);
 				this.labels.put(label, false);
 			}

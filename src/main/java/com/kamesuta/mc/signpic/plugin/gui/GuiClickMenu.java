@@ -11,6 +11,8 @@ import com.kamesuta.mc.signpic.plugin.SignData;
 import com.kamesuta.mc.signpic.plugin.gui.GuiManager.GuiGallery.MouseOverPanel;
 import com.kamesuta.mc.signpic.render.RenderHelper;
 
+import net.minecraft.client.renderer.GlStateManager;
+
 public class GuiClickMenu extends WPanel {
 	protected MouseOverPanel panel;
 	protected SignData data;
@@ -44,4 +46,65 @@ public class GuiClickMenu extends WPanel {
 		return super.mouseClicked(ev, pgp, p, button);
 	}
 
+	public static class ClickMenuPanel extends WPanel {
+		protected String text;
+		protected int textcolor = 0xffffff;
+		protected boolean emphasis;
+
+		public ClickMenuPanel(final R position, final String text) {
+			super(position);
+			this.text = text;
+			setColor(0x00000);
+		}
+
+		public void setColor(final int color) {
+			this.textcolor = color;
+		}
+
+		public int getColor() {
+			return this.textcolor;
+		}
+
+		public String getText() {
+			return this.text;
+		}
+
+		public void setEmphasis(final boolean emphasis) {
+			this.emphasis = emphasis;
+		}
+
+		public boolean isEmphasis() {
+			return this.emphasis;
+		}
+
+		@Override
+		public void draw(final WEvent ev, final Area pgp, final Point p, final float frame, final float popacity) {
+			final Area a = getGuiPosition(pgp);
+			GlStateManager.pushMatrix();
+			if (a.pointInside(p)) {
+				GlStateManager.color(.7f, .7f, .7f, .7f);
+				RenderHelper.startShape();
+				draw(a, GL_QUADS);
+			}
+			GlStateManager.translate(this.emphasis ? a.minX()+2.5f : a.minX(), a.minY(), 0);
+			if (this.emphasis)
+				GlStateManager.scale(.84f, 1, 1);
+			RenderHelper.startTexture();
+			font().drawString(this.emphasis ? "§l"+getText() : getText(), 15, 2, getColor());
+			GlStateManager.popMatrix();
+
+			super.draw(ev, pgp, p, frame, popacity);
+		}
+
+		@Override
+		public boolean mouseClicked(final WEvent ev, final Area pgp, final Point p, final int button) {
+			final Area a = getGuiPosition(pgp);
+			if (a.pointInside(p))
+				onClicked(ev, pgp, p, button);
+			return super.mouseClicked(ev, pgp, p, button);
+		}
+
+		public void onClicked(final WEvent ev, final Area pgp, final Point p, final int button) {
+		}
+	}
 }
