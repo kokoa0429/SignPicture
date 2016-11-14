@@ -7,7 +7,6 @@ import com.kamesuta.mc.bnnwidget.WPanel;
 import com.kamesuta.mc.bnnwidget.position.Area;
 import com.kamesuta.mc.bnnwidget.position.Point;
 import com.kamesuta.mc.bnnwidget.position.R;
-import com.kamesuta.mc.signpic.plugin.SignData;
 import com.kamesuta.mc.signpic.plugin.gui.GuiManager.GuiGallery.MouseOverPanel;
 import com.kamesuta.mc.signpic.render.RenderHelper;
 
@@ -15,12 +14,10 @@ import net.minecraft.client.renderer.GlStateManager;
 
 public class GuiClickMenu extends WPanel {
 	protected MouseOverPanel panel;
-	protected SignData data;
 
-	public GuiClickMenu(final R position, final MouseOverPanel panel, final SignData data) {
+	public GuiClickMenu(final R position, final MouseOverPanel panel) {
 		super(position);
 		this.panel = panel;
-		this.data = data;
 	}
 
 	@Override

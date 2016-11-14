@@ -123,37 +123,55 @@ public class GuiManager extends WFrame {
 			}
 
 			public void openMenu(final Point p) {
-				this.openMenuPoint = p;
+				if (this.data!=null)
+					this.openMenuPoint = p;
+			}
+
+			@Override
+			protected void initWidget() {
+				invokeLater(new Runnable() {
+					@Override
+					public void run() {
+						if (getContainer().size()>=1)
+							getContainer().clear();
+					}
+				});
+				super.initWidget();
 			}
 
 			@Override
 			public void update(final WEvent ev, final Area pgp, final Point p) {
 				final Area a = getGuiPosition(pgp);
 				if (this.openMenuPoint!=null) {
-					if (getContainer().size()>=1)
-						remove(getContainer().get(0));
-
 					final float left = this.openMenuPoint.x()<80 ? 0 : this.openMenuPoint.x()-80;
-					final float top = this.openMenuPoint.y()>a.y2()/2 ? this.openMenuPoint.y()-100 : this.openMenuPoint.y();
+					final float top = this.openMenuPoint.y()>a.y2()-100 ? this.openMenuPoint.y()-100 : this.openMenuPoint.y();
 					final R position = new R(Coord.left(left), Coord.top(top), Coord.height(100), Coord.width(80));
-					add(new GuiClickMenu(position, this, this.data) {
-
+					add(new GuiClickMenu(position, this) {
 						@Override
 						protected void initWidget() {
-
 							add(new ClickMenuPanel(new R(Coord.left(1), Coord.top(3), Coord.height(15), Coord.width(77.7f)), "sushi") {
 								{
 									setEmphasis(true);
 								}
 
+								@Override
+								public void onClicked(final WEvent ev, final Area pgp, final Point p, final int button) {
+
+								}
 							});
 
 							add(new ClickMenuPanel(new R(Coord.left(1), Coord.top(18), Coord.height(15), Coord.width(77.7f)), "sushi") {
+								@Override
+								public void onClicked(final WEvent ev, final Area pgp, final Point p, final int button) {
 
+								}
 							});
 
 							add(new ClickMenuPanel(new R(Coord.left(1), Coord.top(33), Coord.height(15), Coord.width(77.7f)), "sushi") {
+								@Override
+								public void onClicked(final WEvent ev, final Area pgp, final Point p, final int button) {
 
+								}
 							});
 
 							super.initWidget();
