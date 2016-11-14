@@ -34,6 +34,8 @@ signpic.gui.settings.config=コンフィグ
 ## Prevent Anti-AutoSign
 signpic.gui.paas.count=しばらくお待ちください ( %s / %s 文字 )
 signpic.gui.paas.time=Esc でキャンセル ( %s / %s 秒 )
+##Manager
+signpic.gui.manager.owner=所有者
 
 # Notice
 signpic.gui.notice.uploading=アップロード開始 %s

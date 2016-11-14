@@ -29,6 +29,7 @@ import com.kamesuta.mc.signpic.render.RenderHelper;
 
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.client.resources.I18n;
 
 public class GuiManager extends WFrame {
 	public String key;
@@ -97,9 +98,11 @@ public class GuiManager extends WFrame {
 			protected SignData d;
 			protected ContentId i;
 			protected String leftURI;
+			public String owner;
 
 			public MouseOverPanel(final R position) {
 				super(position);
+				this.owner = I18n.format("signpic.gui.manager.owner")+":";
 			}
 
 			public void setData(final SignData data) {
@@ -115,10 +118,10 @@ public class GuiManager extends WFrame {
 			public void draw(final WEvent ev, final Area pgp, final Point p, final float frame, final float popacity) {
 				final Area a = getGuiPosition(pgp);
 				if (this.d!=null) {
-					final float x1 = p.x()<a.x2()-180 ? p.x()+8 : p.x()-180;
-					final float x2 = p.x()+180<a.x2() ? p.x()+180 : p.x()-8;
-					final float y1 = p.y()>30 ? p.y()-30 : p.y();
-					final float y2 = p.y()>30 ? p.y() : p.y()+30;
+					final float x1 = p.x()<a.x2()-140 ? p.x()+8 : p.x()-140;
+					final float x2 = p.x()+140<a.x2() ? p.x()+140 : p.x()-8;
+					final float y1 = p.y()>25 ? p.y()-25 : p.y();
+					final float y2 = p.y()>25 ? p.y() : p.y()+25;
 					final Area overlay = new Area(x1, y1, x2, y2);
 					glColor4f(0, 0, 0, 1);
 					RenderHelper.startShape();
@@ -126,9 +129,12 @@ public class GuiManager extends WFrame {
 					glLineWidth(4f);
 					glColor4f(.1f, 0, .2f, 1);
 					draw(overlay, GL_LINE_LOOP);
+					glPushMatrix();
+					glTranslated(overlay.minX()+overlay.w()/2, overlay.minY()+overlay.h()/2, 0);
 					RenderHelper.startTexture();
-					drawString("Owner:"+this.d.owner_name, overlay.minX()+3, overlay.minY()+4, 0xffffff);
-					drawString(this.leftURI, overlay.minX()+3, overlay.minY()+17, 0xffffff);
+					drawString(this.owner+this.d.owner_name, overlay.minX()-overlay.maxX()+70, overlay.minY()-overlay.maxY()+15, 0xffffff);
+					drawString(this.leftURI, overlay.minX()-overlay.maxX()+70, overlay.minY()-overlay.maxY()+26, 0xffffff);
+					glPopMatrix();
 				}
 
 				super.draw(ev, pgp, p, frame, popacity);
