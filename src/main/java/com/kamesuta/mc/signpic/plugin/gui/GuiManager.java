@@ -19,6 +19,7 @@ import com.kamesuta.mc.bnnwidget.position.Area;
 import com.kamesuta.mc.bnnwidget.position.Coord;
 import com.kamesuta.mc.bnnwidget.position.Point;
 import com.kamesuta.mc.bnnwidget.position.R;
+import com.kamesuta.mc.signpic.Reference;
 import com.kamesuta.mc.signpic.entry.EntryId;
 import com.kamesuta.mc.signpic.entry.content.ContentId;
 import com.kamesuta.mc.signpic.gui.SignPicLabel;
@@ -171,14 +172,16 @@ public class GuiManager extends WFrame {
 				for (final Map.Entry<GalleryLabel, Boolean> line : this.labels.entrySet()) {
 					line.getKey().selected = line.getValue();
 				}
+
 				if (!this.labelsMouseInside)
 					GuiGallery.this.overPanel.setData(null);
 				this.labelsMouseInside = false;
+
 				super.update(ev, pgp, p);
 			}
 
 			public void add(final int i) {
-				final GalleryLabel label = new GalleryLabel(new R(Coord.pleft((i%4)/4f), Coord.top((i/4)*80), Coord.pwidth(1f/4.3f), Coord.height(80)), i);
+				final GalleryLabel label = new GalleryLabel(new R(Coord.pleft((i%4)/4f), Coord.top((i/4)*82), Coord.pwidth(1f/4.3f), Coord.height(80)), i);
 				add(label);
 				this.labels.put(label, false);
 			}
@@ -189,7 +192,7 @@ public class GuiManager extends WFrame {
 
 			@Override
 			public boolean mouseDragged(final WEvent ev, final Area pgp, final Point p, final int button, final long time) {
-				if (button<=1&&time>100&&this.startSelectPoint!=null) {
+				if (button<=1&&!GuiScreen.isCtrlKeyDown()&&!GuiScreen.isShiftKeyDown()&&this.startSelectPoint!=null) {
 					this.drawSelectArea = true;
 					this.selectArea = new Area(this.startSelectPoint.x(), this.startSelectPoint.y(), p.x(), p.y());
 				}
@@ -255,7 +258,7 @@ public class GuiManager extends WFrame {
 
 				@Override
 				public void onAdded() {
-					if (this.i==0)
+					if (isDefault())
 						setEntryId(new EntryId("!signpic:textures/logo.png[]"));
 					PacketHandler.instance.sendPacket(new SignPicturePacket("data", GuiManager.this.key, Integer.toString(this.i)));
 				}
@@ -311,6 +314,7 @@ public class GuiManager extends WFrame {
 							select();
 						} else {
 							if (!GuiScreen.isCtrlKeyDown()) {
+								Reference.logger.info("unselectAll!");
 								selectAll(false);
 								select();
 							} else
