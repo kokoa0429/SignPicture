@@ -19,7 +19,6 @@ import com.kamesuta.mc.bnnwidget.position.Area;
 import com.kamesuta.mc.bnnwidget.position.Coord;
 import com.kamesuta.mc.bnnwidget.position.Point;
 import com.kamesuta.mc.bnnwidget.position.R;
-import com.kamesuta.mc.signpic.Reference;
 import com.kamesuta.mc.signpic.entry.EntryId;
 import com.kamesuta.mc.signpic.entry.content.ContentId;
 import com.kamesuta.mc.signpic.gui.SignPicLabel;
@@ -181,7 +180,8 @@ public class GuiManager extends WFrame {
 			}
 
 			public void add(final int i) {
-				final GalleryLabel label = new GalleryLabel(new R(Coord.pleft((i%4)/4f), Coord.top((i/4)*82), Coord.pwidth(1f/4.3f), Coord.height(80)), i);
+				final int row = 8;
+				final GalleryLabel label = new GalleryLabel(new R(Coord.pleft((i%row)/(float) row), Coord.top((i/row)*82), Coord.pwidth(1f/(row+.3f)), Coord.height(80)), i);
 				add(label);
 				this.labels.put(label, false);
 			}
@@ -314,7 +314,6 @@ public class GuiManager extends WFrame {
 							select();
 						} else {
 							if (!GuiScreen.isCtrlKeyDown()) {
-								Reference.logger.info("unselectAll!");
 								selectAll(false);
 								select();
 							} else
