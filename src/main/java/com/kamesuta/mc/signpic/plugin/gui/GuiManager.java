@@ -13,6 +13,7 @@ import com.google.common.collect.Maps;
 import com.kamesuta.mc.bnnwidget.WEvent;
 import com.kamesuta.mc.bnnwidget.WFrame;
 import com.kamesuta.mc.bnnwidget.WPanel;
+import com.kamesuta.mc.bnnwidget.component.MLabel;
 import com.kamesuta.mc.bnnwidget.motion.Easings;
 import com.kamesuta.mc.bnnwidget.motion.MCoord;
 import com.kamesuta.mc.bnnwidget.position.Area;
@@ -32,6 +33,8 @@ import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.resources.I18n;
 
 public class GuiManager extends WFrame {
+	public static int row = 4;
+
 	public String key;
 	protected final GuiGallery gallery;
 	protected int size;
@@ -58,7 +61,6 @@ public class GuiManager extends WFrame {
 		protected GalleryPanel panel;
 		protected MouseOverPanel overPanel;
 		protected MCoord offset;
-		protected int row = 4;
 
 		public GuiGallery(final R position) {
 			super(position);
@@ -78,14 +80,20 @@ public class GuiManager extends WFrame {
 		public boolean mouseScrolled(final WEvent ev, final Area pgp, final Point p, final int scroll) {
 			if (GuiScreen.isCtrlKeyDown()) {
 				if (scroll<0) {
-					if (this.row<=10)
-						this.row++;
-				} else if (this.row>3)
-					this.row--;
+					if (GuiManager.row<=10)
+						GuiManager.row++;
+				} else if (GuiManager.row>3)
+					GuiManager.row--;
 			} else
-				this.offset.stop().add(Easings.easeOutSine.move(.25f, Math.min(0, Math.max(-(GuiManager.this.size/4)*80, this.offset.get()+scroll)))).start();
+				this.offset.stop().add(Easings.easeOutSine.move(.25f, Math.min(0, Math.max(-(GuiManager.this.size/GuiManager.row-GuiManager.row+2)*(GuiManager.this.height*(1f/(GuiManager.row+.3f))), this.offset.get()+scroll)))).start();
 
 			return super.mouseScrolled(ev, pgp, p, scroll);
+		}
+
+		@Override
+		public void update(final WEvent ev, final Area pgp, final Point p) {
+
+			super.update(ev, pgp, p);
 		}
 
 		@Override
@@ -95,10 +103,11 @@ public class GuiManager extends WFrame {
 		}
 
 		public class MouseOverPanel extends WPanel {
-			protected SignData d;
-			protected ContentId i;
+			protected SignData data;
+			protected ContentId id;
 			protected String leftURI;
-			public String owner;
+			protected String owner;
+			protected Point openMenuPoint;
 
 			public MouseOverPanel(final R position) {
 				super(position);
@@ -106,18 +115,57 @@ public class GuiManager extends WFrame {
 			}
 
 			public void setData(final SignData data) {
-				this.d = data;
-				if (this.d!=null) {
-					this.i = new EntryId(data.sign).getContentId();
-					final String uri = this.i.getURI();
+				this.data = data;
+				if (this.data!=null) {
+					this.id = new EntryId(data.sign).getContentId();
+					final String uri = this.id.getURI();
 					this.leftURI = uri.length()>30 ? uri.substring(0, 30)+"..." : uri;
 				}
+			}
+
+			public void openMenu(final Point p) {
+				this.openMenuPoint = p;
+			}
+
+			@Override
+			public void update(final WEvent ev, final Area pgp, final Point p) {
+				final Area a = getGuiPosition(pgp);
+				if (this.openMenuPoint!=null) {
+					if (getContainer().size()>=1)
+						remove(getContainer().get(0));
+
+					final float left = this.openMenuPoint.x()<80 ? 0 : this.openMenuPoint.x()-80;
+					final float top = this.openMenuPoint.y()>a.y2()/2 ? this.openMenuPoint.y()-100 : this.openMenuPoint.y();
+					final R position = new R(Coord.left(left), Coord.top(top), Coord.height(100), Coord.width(80));
+					add(new GuiClickMenu(position, this, this.data) {
+
+						@Override
+						protected void initWidget() {
+
+							add(new MLabel(new R(Coord.left(0), Coord.top(0), Coord.height(20), Coord.width(80)), "sushi") {
+								{
+									setColor(0x00000);
+								}
+
+							});
+
+							add(new MLabel(new R(Coord.left(0), Coord.top(20), Coord.height(20), Coord.width(80)), "sushi") {
+								{
+									setColor(0x00000);
+								}
+							});
+							super.initWidget();
+						}
+					});
+					this.openMenuPoint = null;
+				}
+				super.update(ev, pgp, p);
 			}
 
 			@Override
 			public void draw(final WEvent ev, final Area pgp, final Point p, final float frame, final float popacity) {
 				final Area a = getGuiPosition(pgp);
-				if (this.d!=null) {
+				if (this.data!=null) {
 					final float x1 = p.x()<a.x2()-140 ? p.x()+8 : p.x()-140;
 					final float x2 = p.x()+140<a.x2() ? p.x()+140 : p.x()-8;
 					final float y1 = p.y()>25 ? p.y()-25 : p.y();
@@ -132,7 +180,7 @@ public class GuiManager extends WFrame {
 					glPushMatrix();
 					glTranslated(overlay.minX()+overlay.w()/2, overlay.minY()+overlay.h()/2, 0);
 					RenderHelper.startTexture();
-					drawString(this.owner+this.d.owner_name, overlay.minX()-overlay.maxX()+70, overlay.minY()-overlay.maxY()+15, 0xffffff);
+					drawString(this.owner+this.data.owner_name, overlay.minX()-overlay.maxX()+70, overlay.minY()-overlay.maxY()+15, 0xffffff);
 					drawString(this.leftURI, overlay.minX()-overlay.maxX()+70, overlay.minY()-overlay.maxY()+26, 0xffffff);
 					glPopMatrix();
 				}
@@ -183,15 +231,15 @@ public class GuiManager extends WFrame {
 				for (final Map.Entry<GalleryLabel, Boolean> line : this.labels.entrySet()) {
 					final GalleryLabel label = line.getKey();
 					label.selected = line.getValue();
-					if (this.rowCache!=GuiGallery.this.row)
-						label.setPosition(getNewLabelPosition(label, GuiGallery.this.row));
+					if (this.rowCache!=GuiManager.row)
+						label.setPosition(getNewLabelPosition(label, GuiManager.row));
 				}
 
 				int i;
-				while ((i = getContainer().size())<=Math.min(((a.h()-GuiGallery.this.offset.get())/(((i%GuiGallery.this.row)/(float) GuiGallery.this.row)*GuiManager.this.size))*GuiGallery.this.row, GuiManager.this.size))
-					add(i, GuiGallery.this.row);
+				while ((i = getContainer().size())<=Math.min(((a.h()-GuiGallery.this.offset.get())/(((i%GuiManager.row)/(float) GuiManager.row)*GuiManager.this.size))*GuiManager.row, GuiManager.this.size))
+					add(i, GuiManager.row);
 
-				this.rowCache = GuiGallery.this.row;
+				this.rowCache = GuiManager.row;
 
 				if (!this.labelsMouseInside)
 					GuiGallery.this.overPanel.setData(null);
@@ -202,6 +250,7 @@ public class GuiManager extends WFrame {
 
 			public void add(final int i, final int row) {
 				final GalleryLabel label = new GalleryLabel(new R(Coord.pleft((i%row)/(float) row), Coord.top((i/row)*((GuiManager.this.height/row)+3)), Coord.pwidth(1f/(row+.3f)), Coord.height(GuiManager.this.height*(1f/(row+.3f)))), i);
+				//				final GalleryLabel label = new GalleryLabel(new R(Coord.width(GuiManager.this.width/row), Coord.height(GuiManager.this.height/(GuiManager.this.height/(GuiManager.this.width/row))), Coord.ptop(.5f), Coord.pleft(.5f)).child(Coord.ptop(-.5f), Coord.pleft(-.5f)), i);
 				add(label);
 				this.labels.put(label, false);
 			}
@@ -329,20 +378,24 @@ public class GuiManager extends WFrame {
 				@Override
 				public boolean mouseClicked(final WEvent ev, final Area pgp, final Point p, final int button) {
 					final Area a = getGuiPosition(pgp);
-					if (a.pointInside(p)&&button==0) {
-						if (!this.selected) {
-							if (!GuiScreen.isShiftKeyDown()) {
-								if (!GuiScreen.isCtrlKeyDown())
-									selectAll(false);
-							} else
-								selectSoFar(this.i);
-							select();
-						} else {
-							if (!GuiScreen.isCtrlKeyDown()) {
-								selectAll(false);
+					if (a.pointInside(p)) {
+						if (button==0) {
+							if (!this.selected) {
+								if (!GuiScreen.isShiftKeyDown()) {
+									if (!GuiScreen.isCtrlKeyDown())
+										selectAll(false);
+								} else
+									selectSoFar(this.i);
 								select();
-							} else
-								GalleryPanel.this.labels.put(this, false);
+							} else {
+								if (!GuiScreen.isCtrlKeyDown()) {
+									selectAll(false);
+									select();
+								} else
+									GalleryPanel.this.labels.put(this, false);
+							}
+						} else if (button==1) {
+							GuiGallery.this.overPanel.openMenu(p);
 						}
 					}
 					return super.mouseClicked(ev, pgp, p, button)||a.pointInside(p);
