@@ -76,9 +76,10 @@ public class GuiManager extends WFrame {
 		@Override
 		public boolean mouseScrolled(final WEvent ev, final Area pgp, final Point p, final int scroll) {
 			if (GuiScreen.isCtrlKeyDown()) {
-				if (scroll<0)
-					this.row++;
-				else if (this.row>3)
+				if (scroll<0) {
+					if (this.row<=10)
+						this.row++;
+				} else if (this.row>3)
 					this.row--;
 			} else
 				this.offset.stop().add(Easings.easeOutSine.move(.25f, Math.min(0, Math.max(-(GuiManager.this.size/4)*80, this.offset.get()+scroll)))).start();
@@ -194,14 +195,14 @@ public class GuiManager extends WFrame {
 			}
 
 			public void add(final int i, final int row) {
-				final GalleryLabel label = new GalleryLabel(new R(Coord.pleft((i%row)/(float) row), Coord.top((i/row)*((230/row)+3)), Coord.pwidth(1f/(row+.3f)), Coord.height(GuiManager.this.height*(1f/(row+.3f)))), i);
+				final GalleryLabel label = new GalleryLabel(new R(Coord.pleft((i%row)/(float) row), Coord.top((i/row)*((GuiManager.this.height/row)+3)), Coord.pwidth(1f/(row+.3f)), Coord.height(GuiManager.this.height*(1f/(row+.3f)))), i);
 				add(label);
 				this.labels.put(label, false);
 			}
 
 			public R getNewLabelPosition(final GalleryLabel label, final int row) {
 				final int i = label.i;
-				return new R(Coord.pleft((i%row)/(float) row), Coord.top((i/row)*((230/row)+3)), Coord.pwidth(1f/(row+.3f)), Coord.height(GuiManager.this.height*(1f/(row+.3f))));
+				return new R(Coord.pleft((i%row)/(float) row), Coord.top((i/row)*((GuiManager.this.height/row)+3)), Coord.pwidth(1f/(row+.3f)), Coord.height(GuiManager.this.height*(1f/(row+.3f))));
 			}
 
 			protected Area selectArea;
