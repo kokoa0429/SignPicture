@@ -57,6 +57,7 @@ public class GuiManager extends WFrame {
 		protected GalleryPanel panel;
 		protected MouseOverPanel overPanel;
 		protected MCoord offset;
+		protected int row = 4;
 
 		public GuiGallery(final R position) {
 			super(position);
@@ -74,7 +75,13 @@ public class GuiManager extends WFrame {
 
 		@Override
 		public boolean mouseScrolled(final WEvent ev, final Area pgp, final Point p, final int scroll) {
-			this.offset.stop().add(Easings.easeOutSine.move(.25f, Math.min(0, Math.max(-(GuiManager.this.size/4)*80, this.offset.get()+scroll)))).start();
+			if (GuiScreen.isCtrlKeyDown()) {
+				if (scroll<0)
+					this.row++;
+				else if (this.row>3)
+					this.row--;
+			} else
+				this.offset.stop().add(Easings.easeOutSine.move(.25f, Math.min(0, Math.max(-(GuiManager.this.size/4)*80, this.offset.get()+scroll)))).start();
 
 			return super.mouseScrolled(ev, pgp, p, scroll);
 		}
@@ -160,17 +167,24 @@ public class GuiManager extends WFrame {
 				}
 			}
 
+			int rowCache;
+
 			@Override
 			public void update(final WEvent ev, final Area pgp, final Point p) {
 				final Area a = getGuiPosition(pgp);
 
-				int i;
-				while ((i = getContainer().size())<=Math.min(((a.h()-GuiGallery.this.offset.get())/80)*4, GuiManager.this.size))
-					add(i);
-
 				for (final Map.Entry<GalleryLabel, Boolean> line : this.labels.entrySet()) {
-					line.getKey().selected = line.getValue();
+					final GalleryLabel label = line.getKey();
+					label.selected = line.getValue();
+					if (this.rowCache!=GuiGallery.this.row)
+						label.setPosition(getNewLabelPosition(label, GuiGallery.this.row));
 				}
+
+				int i;
+				while ((i = getContainer().size())<=Math.min(((a.h()-GuiGallery.this.offset.get())/(((i%GuiGallery.this.row)/(float) GuiGallery.this.row)*GuiManager.this.size))*GuiGallery.this.row, GuiManager.this.size))
+					add(i, GuiGallery.this.row);
+
+				this.rowCache = GuiGallery.this.row;
 
 				if (!this.labelsMouseInside)
 					GuiGallery.this.overPanel.setData(null);
@@ -179,11 +193,15 @@ public class GuiManager extends WFrame {
 				super.update(ev, pgp, p);
 			}
 
-			public void add(final int i) {
-				final int row = 8;
-				final GalleryLabel label = new GalleryLabel(new R(Coord.pleft((i%row)/(float) row), Coord.top((i/row)*82), Coord.pwidth(1f/(row+.3f)), Coord.height(80)), i);
+			public void add(final int i, final int row) {
+				final GalleryLabel label = new GalleryLabel(new R(Coord.pleft((i%row)/(float) row), Coord.top((i/row)*((230/row)+3)), Coord.pwidth(1f/(row+.3f)), Coord.height(GuiManager.this.height*(1f/(row+.3f)))), i);
 				add(label);
 				this.labels.put(label, false);
+			}
+
+			public R getNewLabelPosition(final GalleryLabel label, final int row) {
+				final int i = label.i;
+				return new R(Coord.pleft((i%row)/(float) row), Coord.top((i/row)*((230/row)+3)), Coord.pwidth(1f/(row+.3f)), Coord.height(GuiManager.this.height*(1f/(row+.3f))));
 			}
 
 			protected Area selectArea;
