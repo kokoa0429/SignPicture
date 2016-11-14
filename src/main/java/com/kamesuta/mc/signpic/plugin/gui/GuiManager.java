@@ -20,7 +20,6 @@ import com.kamesuta.mc.bnnwidget.position.Coord;
 import com.kamesuta.mc.bnnwidget.position.Point;
 import com.kamesuta.mc.bnnwidget.position.R;
 import com.kamesuta.mc.signpic.entry.EntryId;
-import com.kamesuta.mc.signpic.entry.content.ContentId;
 import com.kamesuta.mc.signpic.gui.SignPicLabel;
 import com.kamesuta.mc.signpic.plugin.SignData;
 import com.kamesuta.mc.signpic.plugin.packet.PacketHandler;
@@ -79,20 +78,20 @@ public class GuiManager extends WFrame {
 		public boolean mouseScrolled(final WEvent ev, final Area pgp, final Point p, final int scroll) {
 			if (GuiScreen.isCtrlKeyDown()) {
 				if (scroll<0) {
-					if (GuiManager.row<=10)
+					if (GuiManager.row<=10) {
 						GuiManager.row++;
+					}
 				} else if (GuiManager.row>3)
 					GuiManager.row--;
-			} else
-				this.offset.stop().add(Easings.easeOutSine.move(.25f, Math.min(0, Math.max(-(GuiManager.this.size/GuiManager.row-GuiManager.row+2)*(GuiManager.this.height*(1f/(GuiManager.row+.3f))), this.offset.get()+scroll)))).start();
-
+				this.offset.stop().add(Easings.easeOutSine.move(.25f, Math.min(0, -(GuiManager.this.size/GuiManager.row-GuiManager.row+2)*(GuiManager.this.height*(1f/(GuiManager.row+.4f)))))).start();
+			} else {
+				final int lines = (int) Math.ceil((GuiManager.this.size+1)/(float) GuiManager.row);
+				final float nowheight = Math.abs(this.offset.get());
+				final float maxheight = ((GuiManager.this.height/row)+3)*lines-GuiManager.this.height;
+				final float pscroll = nowheight-scroll>maxheight ? -maxheight : this.offset.get()+scroll;
+				this.offset.stop().add(Easings.easeOutSine.move(.25f, Math.min(0, Math.max(-(lines*(GuiManager.this.height*(1f/(GuiManager.row+.3f)))), pscroll)))).start();
+			}
 			return super.mouseScrolled(ev, pgp, p, scroll);
-		}
-
-		@Override
-		public void update(final WEvent ev, final Area pgp, final Point p) {
-
-			super.update(ev, pgp, p);
 		}
 
 		@Override
@@ -103,7 +102,7 @@ public class GuiManager extends WFrame {
 
 		public class MouseOverPanel extends WPanel {
 			protected SignData data;
-			protected ContentId id;
+			protected EntryId id;
 			protected String leftURI;
 			protected String owner;
 			protected Point openMenuPoint;
@@ -116,8 +115,8 @@ public class GuiManager extends WFrame {
 			public void setData(final SignData data) {
 				this.data = data;
 				if (this.data!=null) {
-					this.id = new EntryId(data.sign).getContentId();
-					final String uri = this.id.getURI();
+					this.id = new EntryId(data.sign);
+					final String uri = this.id.getContentId().getURI();
 					this.leftURI = uri.length()>30 ? uri.substring(0, 30)+"..." : uri;
 				}
 			}
