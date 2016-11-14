@@ -83,15 +83,18 @@ public class GuiManager extends WFrame {
 					}
 				} else if (GuiManager.row>3)
 					GuiManager.row--;
-				this.offset.stop().add(Easings.easeOutSine.move(.25f, Math.min(0, -(GuiManager.this.size/GuiManager.row-GuiManager.row+2)*(GuiManager.this.height*(1f/(GuiManager.row+.4f)))))).start();
-			} else {
-				final int lines = (int) Math.ceil((GuiManager.this.size+1)/(float) GuiManager.row);
-				final float nowheight = Math.abs(this.offset.get());
-				final float maxheight = ((GuiManager.this.height/row)+3)*lines-GuiManager.this.height;
-				final float pscroll = nowheight-scroll>maxheight ? -maxheight : this.offset.get()+scroll;
-				this.offset.stop().add(Easings.easeOutSine.move(.25f, Math.min(0, Math.max(-(lines*(GuiManager.this.height*(1f/(GuiManager.row+.3f)))), pscroll)))).start();
-			}
+				scroll(0);
+			} else
+				scroll(scroll);
 			return super.mouseScrolled(ev, pgp, p, scroll);
+		}
+
+		public void scroll(final int scroll) {
+			final int lines = (int) Math.ceil((GuiManager.this.size+1)/(float) GuiManager.row);
+			final float nowheight = Math.abs(this.offset.get());
+			final float maxheight = ((GuiManager.this.height/row)+3)*lines-GuiManager.this.height;
+			final float pscroll = nowheight-scroll>maxheight ? -maxheight : this.offset.get()+scroll;
+			this.offset.stop().add(Easings.easeOutSine.move(.25f, Math.min(0, Math.max(-(lines*(GuiManager.this.height*(1f/(GuiManager.row+.3f)))), pscroll)))).start();
 		}
 
 		@Override
