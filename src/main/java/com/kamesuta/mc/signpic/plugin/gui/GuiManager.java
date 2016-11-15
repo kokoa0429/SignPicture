@@ -25,6 +25,7 @@ import com.kamesuta.mc.signpic.Reference;
 import com.kamesuta.mc.signpic.entry.EntryId;
 import com.kamesuta.mc.signpic.gui.SignPicLabel;
 import com.kamesuta.mc.signpic.plugin.SignData;
+import com.kamesuta.mc.signpic.plugin.gui.GuiManager.GuiGallery.GalleryPanel.GalleryLabel;
 import com.kamesuta.mc.signpic.plugin.packet.PacketHandler;
 import com.kamesuta.mc.signpic.plugin.packet.PacketHandler.SignPicturePacket;
 import com.kamesuta.mc.signpic.render.RenderHelper;
@@ -158,6 +159,11 @@ public class GuiManager extends WFrame implements IGuiControllable {
 
 		@Override
 		public boolean mouseClicked(final WEvent ev, final Area pgp, final Point p, final int button) {
+			if (!super.mouseClicked(ev, pgp, p, button)) {
+				selectAll(false);
+				return true;
+			}
+
 			if (button<=1) {
 				this.startSelectPoint = p;
 				this.selectAbsY = p.y()-this.offset.get();
@@ -223,6 +229,93 @@ public class GuiManager extends WFrame implements IGuiControllable {
 				final float move = Math.min(0, Math.max(-(lines*(height()*(1f/(GuiManager.row+.3f)))), pscroll));
 				this.offset.stop().add(Easings.easeOutSine.move(.25f, move)).start();
 			}
+		}
+
+		protected Map<GalleryLabel, Boolean> labels = Maps.newLinkedHashMap();
+
+		public List<GalleryLabel> getSelectLabel() {
+			final List<GalleryLabel> list = Lists.newLinkedList();
+			for (final Map.Entry<GalleryLabel, Boolean> line : this.labels.entrySet())
+				if (line.getValue())
+					list.add(line.getKey());
+			return list;
+		}
+
+		public void select(final int number) {
+			int i = 0;
+			for (final Map.Entry<GalleryLabel, Boolean> line : this.labels.entrySet()) {
+				if (i!=number)
+					line.setValue(false);
+				else
+					line.setValue(true);
+				i++;
+			}
+		}
+
+		public void selectAll(final boolean select) {
+			for (final Map.Entry<GalleryLabel, Boolean> line : this.labels.entrySet())
+				line.setValue(select);
+		}
+
+		public void selectSoFar(final int number) {
+			int i = 0;
+			boolean select = false;
+			for (final Map.Entry<GalleryLabel, Boolean> line : this.labels.entrySet()) {
+				select = line.getValue();
+				if (select)
+					break;
+				i++;
+			}
+			final int selectFirst = Math.min(i, number);
+			final int selectEnd = Math.max(i, number);
+			int ii = 0;
+			for (final Map.Entry<GalleryLabel, Boolean> line : this.labels.entrySet()) {
+				if (ii>=selectFirst&&selectEnd>=ii)
+					line.setValue(true);
+				ii++;
+			}
+		}
+
+		protected int lastSelect = -1;
+
+		@Override
+		public boolean keyTyped(final WEvent ev, final Area pgp, final Point p, final char c, final int keycode) {
+			if (GuiScreen.isCtrlKeyDown()&&keycode==Keyboard.KEY_A)
+				selectAll(true);
+
+			if (keycode==Keyboard.KEY_UP||keycode==Keyboard.KEY_DOWN||keycode==Keyboard.KEY_LEFT||keycode==Keyboard.KEY_RIGHT) {
+				int next = 0;
+				if (keycode==Keyboard.KEY_DOWN) {
+					if (this.lastSelect<0) {
+						next = GuiManager.row;
+					} else {
+						final boolean nextLine = getLineCont()>(int) Math.ceil((this.lastSelect)/(float) GuiManager.row);
+						if (nextLine)
+							next = this.lastSelect+GuiManager.row<=GuiManager.this.size ? this.lastSelect+GuiManager.row : GuiManager.this.size;
+						else
+							next = GuiManager.this.size;
+						next = next!=0 ? GuiManager.this.size<next ? GuiManager.this.size : next : 1;
+					}
+				} else if (keycode==Keyboard.KEY_UP) {
+					final boolean nextLine = (int) Math.ceil((this.lastSelect)/(float) GuiManager.row)!=1;
+					Reference.logger.info((int) Math.ceil((this.lastSelect)/(float) GuiManager.row));
+					if (nextLine)
+						next = this.lastSelect-GuiManager.row>=1 ? this.lastSelect-GuiManager.row : 1;
+					else
+						next = this.lastSelect;
+				} else if (keycode==Keyboard.KEY_LEFT) {
+					next = this.lastSelect-1>0 ? this.lastSelect-1 : this.lastSelect;
+				} else if (keycode==Keyboard.KEY_RIGHT) {
+					next = this.lastSelect+1<=GuiManager.this.size ? this.lastSelect+1 : this.lastSelect;
+				}
+				if (!GuiScreen.isCtrlKeyDown())
+					if (GuiScreen.isShiftKeyDown())
+						selectSoFar(next);
+					else
+						select(next);
+				this.lastSelect = next;
+			}
+			return super.keyTyped(ev, pgp, p, c, keycode);
 		}
 
 		public class MouseOverPanel extends WPanel {
@@ -310,54 +403,10 @@ public class GuiManager extends WFrame implements IGuiControllable {
 		}
 
 		public class GalleryPanel extends WPanel {
-			protected Map<GalleryLabel, Boolean> labels = Maps.newLinkedHashMap();
 			protected boolean labelsMouseInside = false;
 
 			public GalleryPanel(final R position) {
 				super(position);
-			}
-
-			public List<GalleryLabel> getSelectLabel() {
-				final List<GalleryLabel> list = Lists.newLinkedList();
-				for (final Map.Entry<GalleryLabel, Boolean> line : this.labels.entrySet())
-					if (line.getValue())
-						list.add(line.getKey());
-				return list;
-			}
-
-			public void select(final int number) {
-				int i = 0;
-				for (final Map.Entry<GalleryLabel, Boolean> line : this.labels.entrySet()) {
-					if (i!=number)
-						line.setValue(false);
-					else
-						line.setValue(true);
-					i++;
-				}
-			}
-
-			public void selectAll(final boolean select) {
-				for (final Map.Entry<GalleryLabel, Boolean> line : this.labels.entrySet())
-					line.setValue(select);
-			}
-
-			public void selectSoFar(final int number) {
-				int i = 0;
-				boolean select = false;
-				for (final Map.Entry<GalleryLabel, Boolean> line : this.labels.entrySet()) {
-					select = line.getValue();
-					if (select)
-						break;
-					i++;
-				}
-				final int selectFirst = Math.min(i, number);
-				final int selectEnd = Math.max(i, number);
-				int ii = 0;
-				for (final Map.Entry<GalleryLabel, Boolean> line : this.labels.entrySet()) {
-					if (ii>=selectFirst&&selectEnd>=ii)
-						line.setValue(true);
-					ii++;
-				}
 			}
 
 			int rowCache;
@@ -366,7 +415,7 @@ public class GuiManager extends WFrame implements IGuiControllable {
 			public void update(final WEvent ev, final Area pgp, final Point p) {
 				final Area a = getGuiPosition(pgp);
 
-				for (final Map.Entry<GalleryLabel, Boolean> line : this.labels.entrySet()) {
+				for (final Map.Entry<GalleryLabel, Boolean> line : GuiGallery.this.labels.entrySet()) {
 					final GalleryLabel label = line.getKey();
 					label.selected = line.getValue();
 					if (this.rowCache!=GuiManager.row)
@@ -389,63 +438,12 @@ public class GuiManager extends WFrame implements IGuiControllable {
 			public void add(final int i, final int row) {
 				final GalleryLabel label = new GalleryLabel(new R(Coord.pleft((i%row)/(float) row), Coord.top((i/row)*((height()/row)+3)), Coord.pwidth(1f/(row+.3f)), Coord.height(height()*(1f/(row+.3f)))), i);
 				add(label);
-				this.labels.put(label, false);
+				GuiGallery.this.labels.put(label, false);
 			}
 
 			public R getNewLabelPosition(final GalleryLabel label, final int row) {
 				final int i = label.i;
 				return new R(Coord.pleft((i%row)/(float) row), Coord.top((i/row)*((height()/row)+3)), Coord.pwidth(1f/(row+.3f)), Coord.height(height()*(1f/(row+.3f))));
-			}
-
-			@Override
-			public boolean mouseClicked(final WEvent ev, final Area pgp, final Point p, final int button) {
-				if (!super.mouseClicked(ev, pgp, p, button)) {
-					selectAll(false);
-					return true;
-				}
-				return super.mouseClicked(ev, pgp, p, button);
-			}
-
-			protected int lastSelect = -1;
-
-			@Override
-			public boolean keyTyped(final WEvent ev, final Area pgp, final Point p, final char c, final int keycode) {
-				if (GuiScreen.isCtrlKeyDown()&&keycode==Keyboard.KEY_A)
-					selectAll(true);
-
-				if (keycode==Keyboard.KEY_UP||keycode==Keyboard.KEY_DOWN||keycode==Keyboard.KEY_LEFT||keycode==Keyboard.KEY_RIGHT) {
-					int next = 0;
-					if (keycode==Keyboard.KEY_DOWN) {
-						if (this.lastSelect<0) {
-							next = GuiManager.row;
-						} else {
-							final boolean nextLine = getLineCont()>(int) Math.ceil((this.lastSelect)/(float) GuiManager.row);
-							if (nextLine)
-								next = this.lastSelect+GuiManager.row<=GuiManager.this.size ? this.lastSelect+GuiManager.row : GuiManager.this.size;
-							else
-								next = GuiManager.this.size;
-							next = next!=0 ? GuiManager.this.size<next ? GuiManager.this.size : next : 1;
-						}
-					} else if (keycode==Keyboard.KEY_UP) {
-						final boolean nextLine = (int) Math.ceil((this.lastSelect)/(float) GuiManager.row)!=1;
-						Reference.logger.info((int) Math.ceil((this.lastSelect)/(float) GuiManager.row));
-						if (nextLine)
-							next = this.lastSelect-GuiManager.row>=1 ? this.lastSelect-GuiManager.row : 1;
-						else
-							next = this.lastSelect;
-					} else if (keycode==Keyboard.KEY_LEFT) {
-						next = this.lastSelect-1>0 ? this.lastSelect-1 : this.lastSelect;
-					} else if (keycode==Keyboard.KEY_RIGHT) {
-						next = this.lastSelect+1<=GuiManager.this.size ? this.lastSelect+1 : this.lastSelect;
-					}
-					if (!GuiScreen.isCtrlKeyDown())
-						if (GuiScreen.isShiftKeyDown())
-							selectSoFar(next);
-						else
-							select(next);
-					this.lastSelect = next;
-				}
-				return super.keyTyped(ev, pgp, p, c, keycode);
 			}
 
 			public class GalleryLabel extends SignPicLabel {
@@ -484,7 +482,7 @@ public class GuiManager extends WFrame implements IGuiControllable {
 					}
 
 					if (getSelectArea()!=null)
-						GalleryPanel.this.labels.put(this, getSelectArea().areaOverlap(a));
+						GuiGallery.this.labels.put(this, getSelectArea().areaOverlap(a));
 				}
 
 				@Override
@@ -497,7 +495,7 @@ public class GuiManager extends WFrame implements IGuiControllable {
 							RenderHelper.startShape();
 							drawRect(a);
 						}
-						if (this.selected||GalleryPanel.this.lastSelect==this.i) {
+						if (this.selected||GuiGallery.this.lastSelect==this.i) {
 							glLineWidth(1);
 							glColor4f(.4f, .7f, 1, .8f);
 							RenderHelper.startShape();
@@ -518,12 +516,12 @@ public class GuiManager extends WFrame implements IGuiControllable {
 								} else
 									selectSoFar(this.i);
 								select();
-								GalleryPanel.this.lastSelect = this.i;
+								GuiGallery.this.lastSelect = this.i;
 							} else {
 								if (!GuiScreen.isCtrlKeyDown()) {
-									GalleryPanel.this.select(this.i);
+									GuiGallery.this.select(this.i);
 								} else
-									GalleryPanel.this.labels.put(this, false);
+									GuiGallery.this.labels.put(this, false);
 							}
 						} else if (button==1) {
 							GuiGallery.this.overPanel.openMenu(p);
@@ -534,7 +532,7 @@ public class GuiManager extends WFrame implements IGuiControllable {
 
 				public void select() {
 					if (!isDefault())
-						GalleryPanel.this.labels.put(this, true);
+						GuiGallery.this.labels.put(this, true);
 				}
 			}
 		}
