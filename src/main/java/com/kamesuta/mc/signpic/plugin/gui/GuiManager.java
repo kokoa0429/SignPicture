@@ -368,24 +368,34 @@ public class GuiManager extends WFrame implements IGuiControllable {
 		}
 
 		public class MouseOverPanel extends WPanel {
-			protected GalleryLabel label;
-			protected SignData data;
-			protected EntryId id;
-			protected String leftURI;
+			protected final String localizationOwner;
+			protected String uri;
+			protected String world;
 			protected String owner;
+			protected GalleryLabel label;
 
 			public MouseOverPanel(final R position) {
 				super(position);
-				this.owner = I18n.format("signpic.gui.manager.owner")+":";
+				this.localizationOwner = I18n.format("signpic.gui.manager.owner");
 			}
 
 			public void setLabel(final GalleryLabel label) {
+				if (this.label==label)
+					return;
+
 				this.label = label;
 				if (this.label!=null) {
-					this.data = this.label.getData();
-					this.id = new EntryId(this.data.sign);
-					final String uri = this.id.getContentId().getURI();
-					this.leftURI = uri.length()>30 ? uri.substring(0, 30)+"..." : uri;
+					final SignData data = this.label.getData();
+					this.owner = this.localizationOwner+":"+data.owner_name;
+					this.world = "World:"+data.world;
+					final String uri = new EntryId(data.sign).getContentId().getURI();
+					String substringURI = uri;
+					while (getStringWidth(substringURI)>120)
+						substringURI = substringURI.substring(0, substringURI.length()-1);
+					if (uri.length()==substringURI.length())
+						this.uri = substringURI;
+					else
+						this.uri = substringURI+"...";
 				}
 			}
 
@@ -418,7 +428,7 @@ public class GuiManager extends WFrame implements IGuiControllable {
 					final Area a = getGuiPosition(pgp);
 					final float left = this.openMenuPoint.x()<80 ? 0 : this.openMenuPoint.x()-80;
 					final float top = this.openMenuPoint.y()>a.y2()-100 ? this.openMenuPoint.y()-100 : this.openMenuPoint.y();
-					final R position = new R(Coord.left(left), Coord.top(top), Coord.height(80), Coord.width(100));
+					final R position = new R(Coord.left(left), Coord.top(top), Coord.height(80), Coord.width(115));
 					add(new GuiClickMenu(position, this, GuiManager.this) {
 						@Override
 						protected void initWidget() {
@@ -483,9 +493,9 @@ public class GuiManager extends WFrame implements IGuiControllable {
 					glPushMatrix();
 					glTranslated(overlay.minX()+overlay.w()/2, overlay.minY()+overlay.h()/2, 0);
 					RenderHelper.startTexture();
-					drawString(this.owner+this.data.owner_name, overlay.minX()-overlay.maxX()+70, overlay.minY()-overlay.maxY()+15, 0xffffff);
-					drawStringR("World:"+this.data.world, overlay.minX()-overlay.maxX()+195, overlay.minY()-overlay.maxY()+15, 0xffffff);
-					drawString(this.leftURI, overlay.minX()-overlay.maxX()+70, overlay.minY()-overlay.maxY()+26, 0xffffff);
+					drawString(this.owner, overlay.minX()-overlay.maxX()+70, overlay.minY()-overlay.maxY()+15, 0xffffff);
+					drawStringR(this.world, overlay.minX()-overlay.maxX()+195, overlay.minY()-overlay.maxY()+15, 0xffffff);
+					drawString(this.uri, overlay.minX()-overlay.maxX()+70, overlay.minY()-overlay.maxY()+26, 0xffffff);
 					glPopMatrix();
 				}
 
