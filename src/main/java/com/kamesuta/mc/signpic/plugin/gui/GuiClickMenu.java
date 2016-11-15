@@ -37,11 +37,13 @@ public class GuiClickMenu extends WPanel {
 		glColor4f(0, 0, 0, .6f);
 		RenderHelper.startShape();
 		draw(new Area(a.x1()+4, a.y1()+4, a.x2()+1, a.y2()+1.5f), GL_QUADS);
+		glPushMatrix();
 		glColor4f(.85f, .85f, .85f, 1);
 		draw(a, GL_QUADS);
 		glLineWidth(1f);
 		glColor4f(.6f, .6f, .6f, 1);
 		draw(a, GL_LINE_LOOP);
+		glPopMatrix();
 
 		super.draw(ev, pgp, p, frame, popacity);
 	}

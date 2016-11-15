@@ -123,12 +123,60 @@ public class GuiManager extends WFrame implements IGuiControllable {
 			this.overPanel = new MouseOverPanel(new R(Coord.left(0), Coord.top(0), Coord.right(0), Coord.bottom(0)));
 		}
 
+		protected Area selectArea;
+		private Point startSelectPoint;
+		private float selectAbsY1;
+		private boolean areaSelect;
+
+		@Override
+		public void update(final WEvent ev, final Area pgp, final Point p) {
+			if (this.areaSelect)
+				this.selectArea = new Area(this.startSelectPoint.x(), this.selectAbsY1+this.offset.get(), p.x(), p.y());
+			super.update(ev, pgp, p);
+		}
+
+		@Override
+		public boolean mouseDragged(final WEvent ev, final Area pgp, final Point p, final int button, final long time) {
+			if (button<=1&&!GuiScreen.isCtrlKeyDown()&&!GuiScreen.isShiftKeyDown()&&!GuiGallery.this.overPanel.isOpenMenu()&&this.startSelectPoint!=null)
+				this.areaSelect = true;
+			return super.mouseDragged(ev, pgp, p, button, time);
+		}
+
+		@Override
+		public boolean mouseClicked(final WEvent ev, final Area pgp, final Point p, final int button) {
+			if (button<=1) {
+				this.startSelectPoint = p;
+				this.selectAbsY1 = p.y()-this.offset.get();
+			}
+			return super.mouseClicked(ev, pgp, p, button);
+		}
+
+		@Override
+		public boolean mouseReleased(final WEvent ev, final Area pgp, final Point p, final int button) {
+			this.selectArea = null;
+			this.areaSelect = false;
+			return super.mouseReleased(ev, pgp, p, button);
+		}
+
 		@Override
 		public void draw(final WEvent ev, final Area pgp, final Point p, final float frame, final float popacity) {
 			RenderHelper.startShape();
 			GlStateManager.color(0f, 0f, 0f, .5f);
 			drawRect(getGuiPosition(pgp));
 			super.draw(ev, pgp, p, frame, popacity);
+			if (this.selectArea!=null) {
+				glColor4f(.25f, .3f, 1, .4f);
+				RenderHelper.startShape();
+				w.begin(GL_QUADS, DefaultVertexFormats.POSITION);
+				w.pos(this.selectArea.minX(), this.selectArea.minY(), 0).endVertex();
+				w.pos(this.selectArea.minX(), this.selectArea.maxY(), 0).endVertex();
+				w.pos(this.selectArea.maxX(), this.selectArea.maxY(), 0).endVertex();
+				w.pos(this.selectArea.maxX(), this.selectArea.minY(), 0).endVertex();
+				t.draw();
+				glLineWidth(1.5f);
+				glColor4f(.2f, .3f, 1, .6f);
+				draw(this.selectArea, GL_LINE_LOOP);
+			}
 		}
 
 		@Override
@@ -146,19 +194,20 @@ public class GuiManager extends WFrame implements IGuiControllable {
 					}
 				} else if (GuiManager.row>3)
 					GuiManager.row--;
-				scroll(0);
+				scroll(ev, pgp, p, 0);
 			} else
-				scroll(scroll);
+				scroll(ev, pgp, p, scroll/5);
 			return super.mouseScrolled(ev, pgp, p, scroll);
 		}
 
-		public void scroll(final int scroll) {
-			if (!this.overPanel.isOpenMenu()) {
+		public void scroll(final WEvent ev, final Area pgp, final Point p, final int scroll) {
+			if (isControllable()) {
 				final int lines = (int) Math.ceil((GuiManager.this.size+1)/(float) GuiManager.row);
 				final float nowheight = Math.abs(this.offset.get());
 				final float maxheight = ((GuiManager.this.height/row)+3)*lines-GuiManager.this.height;
 				final float pscroll = nowheight-scroll>maxheight ? -maxheight : this.offset.get()+scroll;
-				this.offset.stop().add(Easings.easeOutSine.move(.25f, Math.min(0, Math.max(-(lines*(GuiManager.this.height*(1f/(GuiManager.row+.3f)))), pscroll)))).start();
+				final float move = Math.min(0, Math.max(-(lines*(GuiManager.this.height*(1f/(GuiManager.row+.3f)))), pscroll));
+				this.offset.stop().add(Easings.easeOutSine.move(.25f, move)).start();
 			}
 		}
 
@@ -316,54 +365,13 @@ public class GuiManager extends WFrame implements IGuiControllable {
 				return new R(Coord.pleft((i%row)/(float) row), Coord.top((i/row)*((GuiManager.this.height/row)+3)), Coord.pwidth(1f/(row+.3f)), Coord.height(GuiManager.this.height*(1f/(row+.3f))));
 			}
 
-			protected Area selectArea;
-			private boolean drawSelectArea;
-			private Point startSelectPoint;
-
-			@Override
-			public boolean mouseDragged(final WEvent ev, final Area pgp, final Point p, final int button, final long time) {
-				if (button<=1&&!GuiScreen.isCtrlKeyDown()&&!GuiScreen.isShiftKeyDown()&&!GuiGallery.this.overPanel.isOpenMenu()&&this.startSelectPoint!=null) {
-					this.drawSelectArea = true;
-					this.selectArea = new Area(this.startSelectPoint.x(), this.startSelectPoint.y(), p.x(), p.y());
-				}
-				return super.mouseDragged(ev, pgp, p, button, time);
-			}
-
 			@Override
 			public boolean mouseClicked(final WEvent ev, final Area pgp, final Point p, final int button) {
-				if (button<=1) {
-					this.startSelectPoint = p;
-					if (!super.mouseClicked(ev, pgp, p, button)) {
-						selectAll(false);
-						return true;
-					}
+				if (!super.mouseClicked(ev, pgp, p, button)) {
+					selectAll(false);
+					return true;
 				}
 				return super.mouseClicked(ev, pgp, p, button);
-			}
-
-			@Override
-			public boolean mouseReleased(final WEvent ev, final Area pgp, final Point p, final int button) {
-				this.drawSelectArea = false;
-				this.selectArea = null;
-				return super.mouseReleased(ev, pgp, p, button);
-			}
-
-			@Override
-			public void draw(final WEvent ev, final Area pgp, final Point p, final float frame, final float popacity) {
-				super.draw(ev, pgp, p, frame, popacity);
-				if (this.drawSelectArea&&this.selectArea!=null) {
-					glColor4f(.25f, .3f, 1, .4f);
-					RenderHelper.startShape();
-					w.begin(GL_QUADS, DefaultVertexFormats.POSITION);
-					w.pos(this.selectArea.minX(), this.selectArea.minY(), 0).endVertex();
-					w.pos(this.selectArea.minX(), this.selectArea.maxY(), 0).endVertex();
-					w.pos(this.selectArea.maxX(), this.selectArea.maxY(), 0).endVertex();
-					w.pos(this.selectArea.maxX(), this.selectArea.minY(), 0).endVertex();
-					t.draw();
-					glLineWidth(1.5f);
-					glColor4f(.2f, .3f, 1, .6f);
-					draw(this.selectArea, GL_LINE_LOOP);
-				}
 			}
 
 			protected int lastSelect = -1;
@@ -410,8 +418,8 @@ public class GuiManager extends WFrame implements IGuiControllable {
 							GuiGallery.this.overPanel.setData(e);
 					}
 
-					if (GalleryPanel.this.selectArea!=null)
-						GalleryPanel.this.labels.put(this, GalleryPanel.this.selectArea.areaOverlap(a));
+					if (GuiGallery.this.selectArea!=null)
+						GalleryPanel.this.labels.put(this, GuiGallery.this.selectArea.areaOverlap(a));
 				}
 
 				@Override
