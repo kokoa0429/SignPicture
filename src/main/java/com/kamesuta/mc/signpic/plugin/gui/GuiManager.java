@@ -126,7 +126,7 @@ public class GuiManager extends WFrame {
 			}
 
 			public void openMenu(final Point p) {
-				if (this.data!=null)
+				if (this.data!=null&&!isOpenMenu())
 					this.openMenuPoint = p;
 			}
 
@@ -164,7 +164,7 @@ public class GuiManager extends WFrame {
 			@Override
 			public void draw(final WEvent ev, final Area pgp, final Point p, final float frame, final float popacity) {
 				final Area a = getGuiPosition(pgp);
-				if (this.data!=null) {
+				if (this.data!=null&&!isOpenMenu()) {
 					final float x1 = p.x()<a.x2()-140 ? p.x()+8 : p.x()-140;
 					final float x2 = p.x()+140<a.x2() ? p.x()+140 : p.x()-8;
 					final float y1 = p.y()>25 ? p.y()-25 : p.y();
@@ -180,6 +180,7 @@ public class GuiManager extends WFrame {
 					glTranslated(overlay.minX()+overlay.w()/2, overlay.minY()+overlay.h()/2, 0);
 					RenderHelper.startTexture();
 					drawString(this.owner+this.data.owner_name, overlay.minX()-overlay.maxX()+70, overlay.minY()-overlay.maxY()+15, 0xffffff);
+					drawStringR("World:"+this.data.world, overlay.minX()-overlay.maxX()+195, overlay.minY()-overlay.maxY()+15, 0xffffff);
 					drawString(this.leftURI, overlay.minX()-overlay.maxX()+70, overlay.minY()-overlay.maxY()+26, 0xffffff);
 					glPopMatrix();
 				}
@@ -264,7 +265,7 @@ public class GuiManager extends WFrame {
 
 			@Override
 			public boolean mouseDragged(final WEvent ev, final Area pgp, final Point p, final int button, final long time) {
-				if (button<=1&&!GuiScreen.isCtrlKeyDown()&&!GuiScreen.isShiftKeyDown()&&this.startSelectPoint!=null) {
+				if (button<=1&&!GuiScreen.isCtrlKeyDown()&&!GuiScreen.isShiftKeyDown()&&!GuiGallery.this.overPanel.isOpenMenu()&&this.startSelectPoint!=null) {
 					this.drawSelectArea = true;
 					this.selectArea = new Area(this.startSelectPoint.x(), this.startSelectPoint.y(), p.x(), p.y());
 				}

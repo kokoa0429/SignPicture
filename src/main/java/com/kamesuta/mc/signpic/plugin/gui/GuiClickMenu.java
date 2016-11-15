@@ -11,6 +11,7 @@ import com.kamesuta.mc.bnnwidget.position.R;
 import com.kamesuta.mc.signpic.render.RenderHelper;
 
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraft.util.ResourceLocation;
 
 public class GuiClickMenu extends WPanel {
 	protected WPanel panel;
@@ -39,14 +40,19 @@ public class GuiClickMenu extends WPanel {
 	public boolean mouseClicked(final WEvent ev, final Area pgp, final Point p, final int button) {
 		final Area a = getGuiPosition(pgp);
 		if (!a.pointInside(p))
-			this.panel.remove(this);
+			close();
 		return super.mouseClicked(ev, pgp, p, button);
 	}
 
-	public static class ClickMenuPanel extends WBase {
+	public void close() {
+		this.panel.remove(this);
+	}
+
+	public class ClickMenuPanel extends WBase {
 		protected String text;
 		protected int textcolor = 0xffffff;
 		protected boolean emphasis;
+		protected ResourceLocation icon;
 
 		public ClickMenuPanel(final R position, final String text) {
 			super(position);
@@ -74,6 +80,14 @@ public class GuiClickMenu extends WPanel {
 			return this.emphasis;
 		}
 
+		public void setIcon(final ResourceLocation resourceLocation) {
+			this.icon = resourceLocation;
+		}
+
+		public ResourceLocation getIcon() {
+			return this.icon;
+		}
+
 		@Override
 		public void draw(final WEvent ev, final Area pgp, final Point p, final float frame, final float popacity) {
 			final Area a = getGuiPosition(pgp);
@@ -89,19 +103,29 @@ public class GuiClickMenu extends WPanel {
 			RenderHelper.startTexture();
 			font().drawString(this.emphasis ? "§l"+getText() : getText(), 15, 2, getColor());
 			GlStateManager.popMatrix();
-
+			if (getIcon()!=null) {
+				final Area iconArea = new Area(a.x1()+.25f, a.y1()+.25f, a.x1()+14.75f, a.y2()-.25f);
+				texture().bindTexture(getIcon());
+				GlStateManager.color(1, 1, 1, 1);
+				RenderHelper.startTexture();
+				drawTexturedModalRect(iconArea);
+			}
 			super.draw(ev, pgp, p, frame, popacity);
 		}
 
 		@Override
 		public boolean mouseClicked(final WEvent ev, final Area pgp, final Point p, final int button) {
 			final Area a = getGuiPosition(pgp);
-			if (a.pointInside(p))
-				onClicked(ev, pgp, p, button);
+			if (a.pointInside(p)) {
+				if (onClicked(ev, pgp, p, button))
+					close();
+				return true;
+			}
 			return super.mouseClicked(ev, pgp, p, button);
 		}
 
-		public void onClicked(final WEvent ev, final Area pgp, final Point p, final int button) {
+		public boolean onClicked(final WEvent ev, final Area pgp, final Point p, final int button) {
+			return true;
 		}
 	}
 }

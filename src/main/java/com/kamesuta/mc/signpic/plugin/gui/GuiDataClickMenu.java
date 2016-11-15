@@ -8,6 +8,8 @@ import com.kamesuta.mc.bnnwidget.position.Point;
 import com.kamesuta.mc.bnnwidget.position.R;
 import com.kamesuta.mc.signpic.plugin.SignData;
 
+import net.minecraft.util.ResourceLocation;
+
 public class GuiDataClickMenu extends GuiClickMenu {
 	private final SignData data;
 
@@ -25,27 +27,39 @@ public class GuiDataClickMenu extends GuiClickMenu {
 		add(new ClickMenuPanel(new R(Coord.left(1), Coord.top(3), Coord.height(15), Coord.width(77.7f)), "sushi") {
 			{
 				setEmphasis(true);
+				setIcon(new ResourceLocation("signpic", "textures/logo.png"));
 			}
 
 			@Override
-			public void onClicked(final WEvent ev, final Area pgp, final Point p, final int button) {
-
+			public boolean onClicked(final WEvent ev, final Area pgp, final Point p, final int button) {
+				return true;
 			}
 		});
-
 		add(new ClickMenuPanel(new R(Coord.left(1), Coord.top(18), Coord.height(15), Coord.width(77.7f)), "sushi") {
 			@Override
-			public void onClicked(final WEvent ev, final Area pgp, final Point p, final int button) {
-
+			public boolean onClicked(final WEvent ev, final Area pgp, final Point p, final int button) {
+				return true;
 			}
 		});
-
 		add(new ClickMenuPanel(new R(Coord.left(1), Coord.top(33), Coord.height(15), Coord.width(77.7f)), "sushi") {
 			@Override
-			public void onClicked(final WEvent ev, final Area pgp, final Point p, final int button) {
-
+			public boolean onClicked(final WEvent ev, final Area pgp, final Point p, final int button) {
+				return true;
 			}
 		});
+		add(new ClickMenuPanel(new R(Coord.left(1), Coord.top(48), Coord.height(15), Coord.width(77.7f)), "sushi") {
+			@Override
+			public boolean onClicked(final WEvent ev, final Area pgp, final Point p, final int button) {
+				return true;
+			}
+		});
+		add(new ClickMenuPanel(new R(Coord.left(1), Coord.top(63), Coord.height(15), Coord.width(77.7f)), "sushi") {
+			@Override
+			public boolean onClicked(final WEvent ev, final Area pgp, final Point p, final int button) {
+				return true;
+			}
+		});
+
 		super.initWidget();
 	}
 }
