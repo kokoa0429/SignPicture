@@ -2,20 +2,20 @@ package com.kamesuta.mc.signpic.plugin.gui;
 
 import static org.lwjgl.opengl.GL11.*;
 
+import com.kamesuta.mc.bnnwidget.WBase;
 import com.kamesuta.mc.bnnwidget.WEvent;
 import com.kamesuta.mc.bnnwidget.WPanel;
 import com.kamesuta.mc.bnnwidget.position.Area;
 import com.kamesuta.mc.bnnwidget.position.Point;
 import com.kamesuta.mc.bnnwidget.position.R;
-import com.kamesuta.mc.signpic.plugin.gui.GuiManager.GuiGallery.MouseOverPanel;
 import com.kamesuta.mc.signpic.render.RenderHelper;
 
 import net.minecraft.client.renderer.GlStateManager;
 
 public class GuiClickMenu extends WPanel {
-	protected MouseOverPanel panel;
+	protected WPanel panel;
 
-	public GuiClickMenu(final R position, final MouseOverPanel panel) {
+	public GuiClickMenu(final R position, final WPanel panel) {
 		super(position);
 		this.panel = panel;
 	}
@@ -43,7 +43,7 @@ public class GuiClickMenu extends WPanel {
 		return super.mouseClicked(ev, pgp, p, button);
 	}
 
-	public static class ClickMenuPanel extends WPanel {
+	public static class ClickMenuPanel extends WBase {
 		protected String text;
 		protected int textcolor = 0xffffff;
 		protected boolean emphasis;

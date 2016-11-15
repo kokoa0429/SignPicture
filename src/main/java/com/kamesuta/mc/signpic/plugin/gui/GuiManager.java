@@ -52,7 +52,14 @@ public class GuiManager extends WFrame {
 
 	@Override
 	protected void init() {
+		Keyboard.enableRepeatEvents(true);
 		add(this.gallery);
+	}
+
+	@Override
+	protected void close() {
+		Keyboard.enableRepeatEvents(false);
+		super.close();
 	}
 
 	public class GuiGallery extends WPanel {
@@ -69,7 +76,6 @@ public class GuiManager extends WFrame {
 
 		@Override
 		protected void initWidget() {
-			Keyboard.enableRepeatEvents(true);
 			add(this.panel);
 			add(this.overPanel);
 		}
@@ -90,17 +96,13 @@ public class GuiManager extends WFrame {
 		}
 
 		public void scroll(final int scroll) {
-			final int lines = (int) Math.ceil((GuiManager.this.size+1)/(float) GuiManager.row);
-			final float nowheight = Math.abs(this.offset.get());
-			final float maxheight = ((GuiManager.this.height/row)+3)*lines-GuiManager.this.height;
-			final float pscroll = nowheight-scroll>maxheight ? -maxheight : this.offset.get()+scroll;
-			this.offset.stop().add(Easings.easeOutSine.move(.25f, Math.min(0, Math.max(-(lines*(GuiManager.this.height*(1f/(GuiManager.row+.3f)))), pscroll)))).start();
-		}
-
-		@Override
-		public boolean onClosing(final WEvent ev, final Area pgp, final Point p) {
-			Keyboard.enableRepeatEvents(false);
-			return super.onClosing(ev, pgp, p);
+			if (!this.overPanel.isOpenMenu()) {
+				final int lines = (int) Math.ceil((GuiManager.this.size+1)/(float) GuiManager.row);
+				final float nowheight = Math.abs(this.offset.get());
+				final float maxheight = ((GuiManager.this.height/row)+3)*lines-GuiManager.this.height;
+				final float pscroll = nowheight-scroll>maxheight ? -maxheight : this.offset.get()+scroll;
+				this.offset.stop().add(Easings.easeOutSine.move(.25f, Math.min(0, Math.max(-(lines*(GuiManager.this.height*(1f/(GuiManager.row+.3f)))), pscroll)))).start();
+			}
 		}
 
 		public class MouseOverPanel extends WPanel {
@@ -108,7 +110,6 @@ public class GuiManager extends WFrame {
 			protected EntryId id;
 			protected String leftURI;
 			protected String owner;
-			protected Point openMenuPoint;
 
 			public MouseOverPanel(final R position) {
 				super(position);
@@ -129,6 +130,10 @@ public class GuiManager extends WFrame {
 					this.openMenuPoint = p;
 			}
 
+			public boolean isOpenMenu() {
+				return getContainer().size()!=0;
+			}
+
 			@Override
 			protected void initWidget() {
 				invokeLater(new Runnable() {
@@ -141,6 +146,8 @@ public class GuiManager extends WFrame {
 				super.initWidget();
 			}
 
+			Point openMenuPoint;
+
 			@Override
 			public void update(final WEvent ev, final Area pgp, final Point p) {
 				final Area a = getGuiPosition(pgp);
@@ -148,37 +155,7 @@ public class GuiManager extends WFrame {
 					final float left = this.openMenuPoint.x()<80 ? 0 : this.openMenuPoint.x()-80;
 					final float top = this.openMenuPoint.y()>a.y2()-100 ? this.openMenuPoint.y()-100 : this.openMenuPoint.y();
 					final R position = new R(Coord.left(left), Coord.top(top), Coord.height(100), Coord.width(80));
-					add(new GuiClickMenu(position, this) {
-						@Override
-						protected void initWidget() {
-							add(new ClickMenuPanel(new R(Coord.left(1), Coord.top(3), Coord.height(15), Coord.width(77.7f)), "sushi") {
-								{
-									setEmphasis(true);
-								}
-
-								@Override
-								public void onClicked(final WEvent ev, final Area pgp, final Point p, final int button) {
-
-								}
-							});
-
-							add(new ClickMenuPanel(new R(Coord.left(1), Coord.top(18), Coord.height(15), Coord.width(77.7f)), "sushi") {
-								@Override
-								public void onClicked(final WEvent ev, final Area pgp, final Point p, final int button) {
-
-								}
-							});
-
-							add(new ClickMenuPanel(new R(Coord.left(1), Coord.top(33), Coord.height(15), Coord.width(77.7f)), "sushi") {
-								@Override
-								public void onClicked(final WEvent ev, final Area pgp, final Point p, final int button) {
-
-								}
-							});
-
-							super.initWidget();
-						}
-					});
+					add(new GuiDataClickMenu(position, this, this.data));
 					this.openMenuPoint = null;
 				}
 				super.update(ev, pgp, p);
