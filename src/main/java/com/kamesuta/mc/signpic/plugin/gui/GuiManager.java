@@ -320,11 +320,18 @@ public class GuiManager extends WFrame implements IGuiControllable {
 				int i = 0;
 				boolean select = false;
 				for (final Map.Entry<GalleryLabel, Boolean> line : this.labels.entrySet()) {
-					if (select&&i<=number)
-						line.setValue(true);
-					if (!select)
-						select = line.getValue();
+					select = line.getValue();
 					i++;
+					if (select)
+						break;
+				}
+				final int selectFirst = Math.min(i, number);
+				final int selectEnd = Math.max(i, number);
+				int ii = 0;
+				for (final Map.Entry<GalleryLabel, Boolean> line : this.labels.entrySet()) {
+					if (ii>=selectFirst&&selectEnd>=ii)
+						line.setValue(true);
+					ii++;
 				}
 			}
 
