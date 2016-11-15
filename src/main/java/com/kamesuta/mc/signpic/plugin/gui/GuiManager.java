@@ -515,7 +515,7 @@ public class GuiManager extends WFrame implements IGuiControllable {
 					selectAll(false);
 					return true;
 				} else
-					return super.mouseClicked(ev, pgp, p, button);
+					return false;
 			}
 
 			public class GalleryLabel extends SignPicLabel {
@@ -559,15 +559,20 @@ public class GuiManager extends WFrame implements IGuiControllable {
 
 				@Override
 				public void draw(final WEvent ev, final Area pgp, final Point p, final float frame, final float opacity) {
-					super.draw(ev, pgp, p, frame, opacity);
 					final Area a = getGuiPosition(pgp);
+					if (!pgp.areaOverlap(a))
+						return;
+					super.draw(ev, pgp, p, frame, opacity);
 					if (!isDefault()) {
 						if (a.pointInside(p)||this.selected) {
+							//							if (GuiManager.this.getContainer().size()<=1)
+							//								glColor4f(.6f, .6f, .6f, .7f);
+							//							else
 							glColor4f(.4f, .7f, 1, this.selected ? .7f : .4f);
 							RenderHelper.startShape();
 							drawRect(a);
 						}
-						if (this.selected||GuiGallery.this.lastSelect==this.i) {
+						if ((this.selected||GuiGallery.this.lastSelect==this.i)&&GuiManager.this.getContainer().size()<=1) {
 							glLineWidth(1);
 							glColor4f(.4f, .7f, 1, .8f);
 							RenderHelper.startShape();
@@ -580,31 +585,29 @@ public class GuiManager extends WFrame implements IGuiControllable {
 				public boolean mouseClicked(final WEvent ev, final Area pgp, final Point p, final int button) {
 					final Area a = getGuiPosition(pgp);
 					if (a.pointInside(p)) {
-						if (button==0) {
+						if (button<=1) {
 							if (!this.selected) {
 								if (!GuiScreen.isShiftKeyDown()) {
 									if (!GuiScreen.isCtrlKeyDown())
 										selectAll(false);
 								} else
 									selectSoFar(this.i);
-								select();
-								GuiGallery.this.lastSelect = this.i;
+								if (!isDefault()) {
+									GuiGallery.this.labels.put(this, true);
+									GuiGallery.this.lastSelect = this.i;
+								}
 							} else {
 								if (!GuiScreen.isCtrlKeyDown()) {
-									GuiGallery.this.select(this.i);
+									select(this.i);
 								} else
 									GuiGallery.this.labels.put(this, false);
 							}
-						} else if (button==1) {
+						}
+						if (button==1) {
 							GuiGallery.this.overPanel.openMenu(p);
 						}
 					}
 					return super.mouseClicked(ev, pgp, p, button)||a.pointInside(p);
-				}
-
-				public void select() {
-					if (!isDefault())
-						GuiGallery.this.labels.put(this, true);
 				}
 			}
 		}
