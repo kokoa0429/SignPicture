@@ -21,6 +21,7 @@ import com.kamesuta.mc.bnnwidget.position.Area;
 import com.kamesuta.mc.bnnwidget.position.Coord;
 import com.kamesuta.mc.bnnwidget.position.Point;
 import com.kamesuta.mc.bnnwidget.position.R;
+import com.kamesuta.mc.signpic.Reference;
 import com.kamesuta.mc.signpic.entry.EntryId;
 import com.kamesuta.mc.signpic.gui.SignPicLabel;
 import com.kamesuta.mc.signpic.plugin.SignData;
@@ -123,16 +124,24 @@ public class GuiManager extends WFrame implements IGuiControllable {
 			this.overPanel = new MouseOverPanel(new R(Coord.left(0), Coord.top(0), Coord.right(0), Coord.bottom(0)));
 		}
 
-		protected Area selectArea;
+		private Area selectArea;
 		private Point startSelectPoint;
-		private float selectAbsY1;
+		private float selectAbsY;
 		private boolean areaSelect;
+
+		public Area getSelectArea() {
+			return this.selectArea;
+		}
+
+		public int getLineCont() {
+			return (int) Math.ceil((GuiManager.this.size+1)/(float) GuiManager.row);
+		}
 
 		@Override
 		public void update(final WEvent ev, final Area pgp, final Point p) {
 			if (this.areaSelect) {
-				this.selectArea = new Area(this.startSelectPoint.x(), this.selectAbsY1+this.offset.get(), p.x(), p.y());
-				if (GuiManager.this.height-3<=p.y())
+				this.selectArea = new Area(this.startSelectPoint.x(), this.selectAbsY+this.offset.get(), p.x(), p.y());
+				if (height()-3<=p.y())
 					scroll(ev, pgp, p, -20);
 				if (p.y()<=3)
 					scroll(ev, pgp, p, 20);
@@ -151,7 +160,7 @@ public class GuiManager extends WFrame implements IGuiControllable {
 		public boolean mouseClicked(final WEvent ev, final Area pgp, final Point p, final int button) {
 			if (button<=1) {
 				this.startSelectPoint = p;
-				this.selectAbsY1 = p.y()-this.offset.get();
+				this.selectAbsY = p.y()-this.offset.get();
 			}
 			return super.mouseClicked(ev, pgp, p, button);
 		}
@@ -207,11 +216,11 @@ public class GuiManager extends WFrame implements IGuiControllable {
 
 		public void scroll(final WEvent ev, final Area pgp, final Point p, final int scroll) {
 			if (isControllable()) {
-				final int lines = (int) Math.ceil((GuiManager.this.size+1)/(float) GuiManager.row);
+				final float lines = getLineCont();
 				final float nowheight = Math.abs(this.offset.get());
-				final float maxheight = ((GuiManager.this.height/row)+3)*lines-GuiManager.this.height;
+				final float maxheight = ((height()/row)+3)*lines-height();
 				final float pscroll = nowheight-scroll>maxheight ? -maxheight : this.offset.get()+scroll;
-				final float move = Math.min(0, Math.max(-(lines*(GuiManager.this.height*(1f/(GuiManager.row+.3f)))), pscroll));
+				final float move = Math.min(0, Math.max(-(lines*(height()*(1f/(GuiManager.row+.3f)))), pscroll));
 				this.offset.stop().add(Easings.easeOutSine.move(.25f, move)).start();
 			}
 		}
@@ -316,6 +325,17 @@ public class GuiManager extends WFrame implements IGuiControllable {
 				return list;
 			}
 
+			public void select(final int number) {
+				int i = 0;
+				for (final Map.Entry<GalleryLabel, Boolean> line : this.labels.entrySet()) {
+					if (i!=number)
+						line.setValue(false);
+					else
+						line.setValue(true);
+					i++;
+				}
+			}
+
 			public void selectAll(final boolean select) {
 				for (final Map.Entry<GalleryLabel, Boolean> line : this.labels.entrySet())
 					line.setValue(select);
@@ -367,14 +387,14 @@ public class GuiManager extends WFrame implements IGuiControllable {
 			}
 
 			public void add(final int i, final int row) {
-				final GalleryLabel label = new GalleryLabel(new R(Coord.pleft((i%row)/(float) row), Coord.top((i/row)*((GuiManager.this.height/row)+3)), Coord.pwidth(1f/(row+.3f)), Coord.height(GuiManager.this.height*(1f/(row+.3f)))), i);
+				final GalleryLabel label = new GalleryLabel(new R(Coord.pleft((i%row)/(float) row), Coord.top((i/row)*((height()/row)+3)), Coord.pwidth(1f/(row+.3f)), Coord.height(height()*(1f/(row+.3f)))), i);
 				add(label);
 				this.labels.put(label, false);
 			}
 
 			public R getNewLabelPosition(final GalleryLabel label, final int row) {
 				final int i = label.i;
-				return new R(Coord.pleft((i%row)/(float) row), Coord.top((i/row)*((GuiManager.this.height/row)+3)), Coord.pwidth(1f/(row+.3f)), Coord.height(GuiManager.this.height*(1f/(row+.3f))));
+				return new R(Coord.pleft((i%row)/(float) row), Coord.top((i/row)*((height()/row)+3)), Coord.pwidth(1f/(row+.3f)), Coord.height(height()*(1f/(row+.3f))));
 			}
 
 			@Override
@@ -392,6 +412,39 @@ public class GuiManager extends WFrame implements IGuiControllable {
 			public boolean keyTyped(final WEvent ev, final Area pgp, final Point p, final char c, final int keycode) {
 				if (GuiScreen.isCtrlKeyDown()&&keycode==Keyboard.KEY_A)
 					selectAll(true);
+
+				if (keycode==Keyboard.KEY_UP||keycode==Keyboard.KEY_DOWN||keycode==Keyboard.KEY_LEFT||keycode==Keyboard.KEY_RIGHT) {
+					int next = 0;
+					if (keycode==Keyboard.KEY_DOWN) {
+						if (this.lastSelect<0) {
+							next = GuiManager.row;
+						} else {
+							final boolean nextLine = getLineCont()>(int) Math.ceil((this.lastSelect)/(float) GuiManager.row);
+							if (nextLine)
+								next = this.lastSelect+GuiManager.row<=GuiManager.this.size ? this.lastSelect+GuiManager.row : GuiManager.this.size;
+							else
+								next = GuiManager.this.size;
+							next = next!=0 ? GuiManager.this.size<next ? GuiManager.this.size : next : 1;
+						}
+					} else if (keycode==Keyboard.KEY_UP) {
+						final boolean nextLine = (int) Math.ceil((this.lastSelect)/(float) GuiManager.row)!=1;
+						Reference.logger.info((int) Math.ceil((this.lastSelect)/(float) GuiManager.row));
+						if (nextLine)
+							next = this.lastSelect-GuiManager.row>=1 ? this.lastSelect-GuiManager.row : 1;
+						else
+							next = this.lastSelect;
+					} else if (keycode==Keyboard.KEY_LEFT) {
+						next = this.lastSelect-1>0 ? this.lastSelect-1 : this.lastSelect;
+					} else if (keycode==Keyboard.KEY_RIGHT) {
+						next = this.lastSelect+1<=GuiManager.this.size ? this.lastSelect+1 : this.lastSelect;
+					}
+					if (!GuiScreen.isCtrlKeyDown())
+						if (GuiScreen.isShiftKeyDown())
+							selectSoFar(next);
+						else
+							select(next);
+					this.lastSelect = next;
+				}
 				return super.keyTyped(ev, pgp, p, c, keycode);
 			}
 
@@ -430,8 +483,8 @@ public class GuiManager extends WFrame implements IGuiControllable {
 							GuiGallery.this.overPanel.setData(e);
 					}
 
-					if (GuiGallery.this.selectArea!=null)
-						GalleryPanel.this.labels.put(this, GuiGallery.this.selectArea.areaOverlap(a));
+					if (getSelectArea()!=null)
+						GalleryPanel.this.labels.put(this, getSelectArea().areaOverlap(a));
 				}
 
 				@Override
@@ -468,8 +521,7 @@ public class GuiManager extends WFrame implements IGuiControllable {
 								GalleryPanel.this.lastSelect = this.i;
 							} else {
 								if (!GuiScreen.isCtrlKeyDown()) {
-									selectAll(false);
-									select();
+									GalleryPanel.this.select(this.i);
 								} else
 									GalleryPanel.this.labels.put(this, false);
 							}
