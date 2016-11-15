@@ -29,11 +29,11 @@ public class SignPicLabel extends WBase {
 	public void draw(final WEvent ev, final Area pgp, final Point p, final float frame, final float opacity) {
 		final Area a = getGuiPosition(pgp);
 		final EntryId entryId = getEntryId();
-		if (entryId != null) {
+		if (entryId!=null) {
 			final Entry entry = entryId.entry();
 			if (entry.isValid()) {
 				final Content content = entry.content();
-				if (content == null || StringUtils.isEmpty(content.id.id())) {
+				if (content==null||StringUtils.isEmpty(content.id.id())) {
 					RenderHelper.startTexture();
 					GlStateManager.color(1f, 1f, 1f, .2f);
 					texture().bindTexture(defaultTexture);
