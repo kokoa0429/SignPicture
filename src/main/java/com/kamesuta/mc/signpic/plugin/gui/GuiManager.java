@@ -140,6 +140,7 @@ public class GuiManager extends WFrame implements IGuiControllable {
 		protected GalleryPanel panel;
 		protected MouseOverPanel overPanel;
 		protected MCoord offset;
+		protected int lastSelect = -1;
 
 		public GuiGallery(final R position) {
 			super(position);
@@ -157,9 +158,15 @@ public class GuiManager extends WFrame implements IGuiControllable {
 			return this.selectArea;
 		}
 
-		public int getLineCont() {
-			return (int) Math.ceil((GuiManager.this.size+1)/(float) GuiManager.row);
+		public int getLine(final int i) {
+			return (int) Math.ceil((i+1)/(float) GuiManager.row);
 		}
+
+		public float getPanelHeight() {
+			return height()*(1f/(row+.3f));
+		}
+
+		int lastSelectCache = -1;
 
 		@Override
 		public void update(final WEvent ev, final Area pgp, final Point p) {
@@ -175,6 +182,27 @@ public class GuiManager extends WFrame implements IGuiControllable {
 				if (p.y()<=3)
 					scroll(ev, pgp, p, 20);
 			}
+
+			if (this.lastSelectCache!=this.lastSelect) {
+				final Area a = getGuiPosition(pgp);
+				final Area panelArea = new R(Coord.pleft((this.lastSelect%row)/(float) row), Coord.top((this.lastSelect/row)*((height()/row)+3)+this.offset.get()), Coord.pwidth(1f/(row+.3f)), Coord.height(getPanelHeight())).getAbsolute(a);
+				if (!a.areaInside(panelArea)) {
+					final int lastSelectLine = getLine(this.lastSelect);
+					final int lastSelectCacheLine = getLine(this.lastSelectCache);
+					float move = 0;
+					if (lastSelectLine==lastSelectCacheLine)
+						if (height()-panelArea.maxY()<panelArea.minY())
+							move = this.offset.get()+(height()-panelArea.maxY());
+						else
+							move = this.offset.get()-panelArea.minY();
+					else if (this.lastSelect>this.lastSelectCache)
+						move = this.offset.get()+(height()-panelArea.maxY());
+					else
+						move = this.offset.get()-panelArea.minY();
+					this.offset.stop().add(Easings.easeOutSine.move(.25f, move)).start();
+				}
+			}
+			this.lastSelectCache = this.lastSelect;
 			super.update(ev, pgp, p);
 		}
 
@@ -245,7 +273,7 @@ public class GuiManager extends WFrame implements IGuiControllable {
 
 		public void scroll(final WEvent ev, final Area pgp, final Point p, final int scroll) {
 			if (isControllable()) {
-				final float lines = getLineCont();
+				final float lines = getLine(GuiManager.this.size);
 				final float nowheight = Math.abs(this.offset.get());
 				final float maxheight = ((height()/row)+3)*lines-height();
 				final float pscroll = nowheight-scroll>maxheight ? -maxheight : this.offset.get()+scroll;
@@ -299,8 +327,6 @@ public class GuiManager extends WFrame implements IGuiControllable {
 			}
 		}
 
-		protected int lastSelect = -1;
-
 		@Override
 		public boolean keyTyped(final WEvent ev, final Area pgp, final Point p, final char c, final int keycode) {
 			if (GuiScreen.isCtrlKeyDown()&&keycode==Keyboard.KEY_A)
@@ -312,7 +338,7 @@ public class GuiManager extends WFrame implements IGuiControllable {
 					if (this.lastSelect<0) {
 						next = GuiManager.row;
 					} else {
-						final boolean nextLine = getLineCont()>(int) Math.ceil((this.lastSelect)/(float) GuiManager.row);
+						final boolean nextLine = getLine(GuiManager.this.size)>(int) Math.ceil((this.lastSelect)/(float) GuiManager.row);
 						if (nextLine)
 							next = this.lastSelect+GuiManager.row<=GuiManager.this.size ? this.lastSelect+GuiManager.row : GuiManager.this.size;
 						else
@@ -342,6 +368,7 @@ public class GuiManager extends WFrame implements IGuiControllable {
 		}
 
 		public class MouseOverPanel extends WPanel {
+			protected GalleryLabel label;
 			protected SignData data;
 			protected EntryId id;
 			protected String leftURI;
@@ -352,17 +379,18 @@ public class GuiManager extends WFrame implements IGuiControllable {
 				this.owner = I18n.format("signpic.gui.manager.owner")+":";
 			}
 
-			public void setData(final SignData data) {
-				this.data = data;
-				if (this.data!=null) {
-					this.id = new EntryId(data.sign);
+			public void setLabel(final GalleryLabel label) {
+				this.label = label;
+				if (this.label!=null) {
+					this.data = this.label.getData();
+					this.id = new EntryId(this.data.sign);
 					final String uri = this.id.getContentId().getURI();
 					this.leftURI = uri.length()>30 ? uri.substring(0, 30)+"..." : uri;
 				}
 			}
 
 			public void openMenu(final Point p) {
-				if (this.data!=null&&!isOpenMenu())
+				if (this.label!=null&&!isOpenMenu())
 					this.openMenuPoint = p;
 			}
 
@@ -386,15 +414,15 @@ public class GuiManager extends WFrame implements IGuiControllable {
 
 			@Override
 			public void update(final WEvent ev, final Area pgp, final Point p) {
-				final Area a = getGuiPosition(pgp);
 				if (this.openMenuPoint!=null) {
+					final Area a = getGuiPosition(pgp);
 					final float left = this.openMenuPoint.x()<80 ? 0 : this.openMenuPoint.x()-80;
 					final float top = this.openMenuPoint.y()>a.y2()-100 ? this.openMenuPoint.y()-100 : this.openMenuPoint.y();
 					final R position = new R(Coord.left(left), Coord.top(top), Coord.height(100), Coord.width(80));
 					add(new GuiClickMenu(position, this, GuiManager.this) {
 						@Override
 						protected void initWidget() {
-							add(new ClickMenuPanel(new R(Coord.left(1), Coord.top(3), Coord.height(15), Coord.width(77.7f)), "sushi") {
+							add(new ClickMenuPanel(new R(Coord.left(1), Coord.top(3), Coord.height(15), Coord.width(77.7f)), I18n.format("signpic.gui.manager.open")) {
 								{
 									setEmphasis(true);
 									setIcon(new ResourceLocation("signpic", "textures/logo.png"));
@@ -405,7 +433,7 @@ public class GuiManager extends WFrame implements IGuiControllable {
 									return true;
 								}
 							});
-							add(new ClickMenuPanel(new R(Coord.left(1), Coord.top(18), Coord.height(15), Coord.width(77.7f)), "sushi") {
+							add(new ClickMenuPanel(new R(Coord.left(1), Coord.top(18), Coord.height(15), Coord.width(77.7f)), I18n.format("signpic.gui.manager.openbrowzer")) {
 								@Override
 								public boolean onClicked(final WEvent ev, final Area pgp, final Point p, final int button) {
 									return true;
@@ -440,7 +468,7 @@ public class GuiManager extends WFrame implements IGuiControllable {
 			@Override
 			public void draw(final WEvent ev, final Area pgp, final Point p, final float frame, final float popacity) {
 				final Area a = getGuiPosition(pgp);
-				if (this.data!=null&&!isOpenMenu()) {
+				if (this.label!=null&&!isOpenMenu()) {
 					final float x1 = p.x()<a.x2()-140 ? p.x()+8 : p.x()-140;
 					final float x2 = p.x()+140<a.x2() ? p.x()+140 : p.x()-8;
 					final float y1 = p.y()>25 ? p.y()-25 : p.y();
@@ -492,21 +520,21 @@ public class GuiManager extends WFrame implements IGuiControllable {
 				this.rowCache = GuiManager.row;
 
 				if (!this.labelsMouseInside)
-					GuiGallery.this.overPanel.setData(null);
+					GuiGallery.this.overPanel.setLabel(null);
 				this.labelsMouseInside = false;
 
 				super.update(ev, pgp, p);
 			}
 
 			public void add(final int i, final int row) {
-				final GalleryLabel label = new GalleryLabel(new R(Coord.pleft((i%row)/(float) row), Coord.top((i/row)*((height()/row)+3)), Coord.pwidth(1f/(row+.3f)), Coord.height(height()*(1f/(row+.3f)))), i);
+				final GalleryLabel label = new GalleryLabel(new R(Coord.pleft((i%row)/(float) row), Coord.top((i/row)*((height()/row)+3)), Coord.pwidth(1f/(row+.3f)), Coord.height(getPanelHeight())), i);
 				add(label);
 				GuiGallery.this.labels.put(label, false);
 			}
 
 			public R getNewLabelPosition(final GalleryLabel label, final int row) {
 				final int i = label.i;
-				return new R(Coord.pleft((i%row)/(float) row), Coord.top((i/row)*((height()/row)+3)), Coord.pwidth(1f/(row+.3f)), Coord.height(height()*(1f/(row+.3f))));
+				return new R(Coord.pleft((i%row)/(float) row), Coord.top((i/row)*((height()/row)+3)), Coord.pwidth(1f/(row+.3f)), Coord.height(getPanelHeight()));
 			}
 
 			@Override
@@ -531,6 +559,10 @@ public class GuiManager extends WFrame implements IGuiControllable {
 					return this.i==0;
 				}
 
+				public SignData getData() {
+					return GuiManager.this.data.get(this.i-1);
+				}
+
 				@Override
 				public void onAdded() {
 					if (isDefault())
@@ -548,9 +580,9 @@ public class GuiManager extends WFrame implements IGuiControllable {
 					if (a.pointInside(p)) {
 						GalleryPanel.this.labelsMouseInside = true;
 						if (isDefault())
-							GuiGallery.this.overPanel.setData(null);
+							GuiGallery.this.overPanel.setLabel(null);
 						if (e!=null)
-							GuiGallery.this.overPanel.setData(e);
+							GuiGallery.this.overPanel.setLabel(this);
 					}
 
 					if (getSelectArea()!=null)

@@ -76,6 +76,10 @@ public class Area {
 		return !(a.maxX()<minX()||a.minX()>maxX()||a.minY()>maxY()||a.maxY()<minY());
 	}
 
+	public boolean areaInside(final Area a) {
+		return a.minX()>=minX()&&a.minY()>=minY()&&a.maxX()<=maxX()&&a.maxY()<=maxY();
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;

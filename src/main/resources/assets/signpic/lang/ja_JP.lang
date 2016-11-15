@@ -36,6 +36,8 @@ signpic.gui.paas.count=しばらくお待ちください ( %s / %s 文字 )
 signpic.gui.paas.time=Esc でキャンセル ( %s / %s 秒 )
 ##Manager
 signpic.gui.manager.owner=所有者
+signpic.gui.manager.open=開く
+signpic.gui.manager.openbrowzer=ブラウザで開く
 
 # Notice
 signpic.gui.notice.uploading=アップロード開始 %s
