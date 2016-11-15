@@ -2,6 +2,7 @@ package com.kamesuta.mc.signpic.plugin.gui;
 
 import static org.lwjgl.opengl.GL11.*;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 
@@ -10,6 +11,7 @@ import org.lwjgl.input.Keyboard;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.kamesuta.mc.bnnwidget.WCommon;
 import com.kamesuta.mc.bnnwidget.WEvent;
 import com.kamesuta.mc.bnnwidget.WFrame;
 import com.kamesuta.mc.bnnwidget.WPanel;
@@ -27,16 +29,19 @@ import com.kamesuta.mc.signpic.plugin.packet.PacketHandler.SignPicturePacket;
 import com.kamesuta.mc.signpic.render.RenderHelper;
 
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.resources.I18n;
 
-public class GuiManager extends WFrame {
+public class GuiManager extends WFrame implements IGuiControllable {
 	public static int row = 4;
 
 	public String key;
 	protected final GuiGallery gallery;
 	protected int size;
 	protected final Map<Integer, SignData> data = Maps.newHashMap();
+
+	private WCommon controllGui;
 
 	public GuiManager(final String data, final String size) {
 		this.key = data;
@@ -57,9 +62,53 @@ public class GuiManager extends WFrame {
 	}
 
 	@Override
-	protected void close() {
+	public void onGuiClosed() {
 		Keyboard.enableRepeatEvents(false);
-		super.close();
+		super.onGuiClosed();
+	}
+
+	@Override
+	public void setControllable(final WCommon gui) {
+		this.controllGui = gui;
+	}
+
+	@Override
+	public boolean isControllable() {
+		return this.controllGui==null;
+	}
+
+	@Override
+	protected void mouseClicked(final int x, final int y, final int button) throws IOException {
+		if (isControllable()) {
+			super.mouseClicked(x, y, button);
+		} else {
+			this.mousebutton = button;
+			final Area gp = getAbsolute();
+			final Point p = getMouseAbsolute();
+			this.controllGui.mouseClicked(this.event, gp, p, button);
+		}
+	}
+
+	@Override
+	protected void keyTyped(final char c, final int keycode) {
+		if (isControllable()) {
+			super.keyTyped(c, keycode);
+		} else {
+			final Area gp = getAbsolute();
+			final Point p = getMouseAbsolute();
+			this.controllGui.keyTyped(this.event, gp, p, c, keycode);
+		}
+	}
+
+	@Override
+	protected void mouseClickMove(final int x, final int y, final int button, final long time) {
+		if (isControllable()) {
+			super.mouseClickMove(x, y, button, time);
+		} else {
+			final Area gp = getAbsolute();
+			final Point p = getMouseAbsolute();
+			this.controllGui.mouseDragged(this.event, gp, p, button, time);
+		}
 	}
 
 	public class GuiGallery extends WPanel {
@@ -72,6 +121,14 @@ public class GuiManager extends WFrame {
 			this.offset = MCoord.top(0);
 			this.panel = new GalleryPanel(new R(Coord.left(0), this.offset, Coord.right(0), Coord.bottom(0)));
 			this.overPanel = new MouseOverPanel(new R(Coord.left(0), Coord.top(0), Coord.right(0), Coord.bottom(0)));
+		}
+
+		@Override
+		public void draw(final WEvent ev, final Area pgp, final Point p, final float frame, final float popacity) {
+			RenderHelper.startShape();
+			GlStateManager.color(0f, 0f, 0f, .5f);
+			drawRect(getGuiPosition(pgp));
+			super.draw(ev, pgp, p, frame, popacity);
 		}
 
 		@Override
@@ -155,7 +212,7 @@ public class GuiManager extends WFrame {
 					final float left = this.openMenuPoint.x()<80 ? 0 : this.openMenuPoint.x()-80;
 					final float top = this.openMenuPoint.y()>a.y2()-100 ? this.openMenuPoint.y()-100 : this.openMenuPoint.y();
 					final R position = new R(Coord.left(left), Coord.top(top), Coord.height(100), Coord.width(80));
-					add(new GuiDataClickMenu(position, this, this.data));
+					add(new GuiDataClickMenu(position, this, GuiManager.this, this.data));
 					this.openMenuPoint = null;
 				}
 				super.update(ev, pgp, p);
@@ -172,7 +229,7 @@ public class GuiManager extends WFrame {
 					final Area overlay = new Area(x1, y1, x2, y2);
 					glColor4f(0, 0, 0, 1);
 					RenderHelper.startShape();
-					draw(overlay, GL_QUADS);
+					drawRect(overlay);
 					glLineWidth(4f);
 					glColor4f(.1f, 0, .2f, 1);
 					draw(overlay, GL_LINE_LOOP);
@@ -309,6 +366,8 @@ public class GuiManager extends WFrame {
 				}
 			}
 
+			protected int lastSelect = -1;
+
 			@Override
 			public boolean keyTyped(final WEvent ev, final Area pgp, final Point p, final char c, final int keycode) {
 				if (GuiScreen.isCtrlKeyDown()&&keycode==Keyboard.KEY_A)
@@ -363,10 +422,10 @@ public class GuiManager extends WFrame {
 						if (a.pointInside(p)||this.selected) {
 							glColor4f(.4f, .7f, 1, this.selected ? .7f : .4f);
 							RenderHelper.startShape();
-							draw(a, GL_QUADS);
+							drawRect(a);
 						}
-						if (this.selected) {
-							glLineWidth(3f);
+						if (this.selected||GalleryPanel.this.lastSelect==this.i) {
+							glLineWidth(1);
 							glColor4f(.4f, .7f, 1, .8f);
 							RenderHelper.startShape();
 							draw(a, GL_LINE_LOOP);
@@ -386,6 +445,7 @@ public class GuiManager extends WFrame {
 								} else
 									selectSoFar(this.i);
 								select();
+								GalleryPanel.this.lastSelect = this.i;
 							} else {
 								if (!GuiScreen.isCtrlKeyDown()) {
 									selectAll(false);

@@ -13,8 +13,8 @@ import net.minecraft.util.ResourceLocation;
 public class GuiDataClickMenu extends GuiClickMenu {
 	private final SignData data;
 
-	public GuiDataClickMenu(final R position, final WPanel panel, final SignData data) {
-		super(position, panel);
+	public GuiDataClickMenu(final R position, final WPanel panel, final IGuiControllable controllable, final SignData data) {
+		super(position, panel, controllable);
 		this.data = data;
 	}
 

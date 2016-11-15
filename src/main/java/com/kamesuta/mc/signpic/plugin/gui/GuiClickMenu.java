@@ -2,6 +2,8 @@ package com.kamesuta.mc.signpic.plugin.gui;
 
 import static org.lwjgl.opengl.GL11.*;
 
+import org.lwjgl.input.Keyboard;
+
 import com.kamesuta.mc.bnnwidget.WBase;
 import com.kamesuta.mc.bnnwidget.WEvent;
 import com.kamesuta.mc.bnnwidget.WPanel;
@@ -15,10 +17,18 @@ import net.minecraft.util.ResourceLocation;
 
 public class GuiClickMenu extends WPanel {
 	protected WPanel panel;
+	protected IGuiControllable controllable;
 
-	public GuiClickMenu(final R position, final WPanel panel) {
+	public GuiClickMenu(final R position, final WPanel panel, final IGuiControllable controllable) {
 		super(position);
 		this.panel = panel;
+		this.controllable = controllable;
+	}
+
+	@Override
+	protected void initWidget() {
+		this.controllable.setControllable(this);
+		super.initWidget();
 	}
 
 	@Override
@@ -44,8 +54,16 @@ public class GuiClickMenu extends WPanel {
 		return super.mouseClicked(ev, pgp, p, button);
 	}
 
+	@Override
+	public boolean keyTyped(final WEvent ev, final Area pgp, final Point p, final char c, final int keycode) {
+		if (keycode==Keyboard.KEY_ESCAPE)
+			close();
+		return super.keyTyped(ev, pgp, p, c, keycode);
+	}
+
 	public void close() {
 		this.panel.remove(this);
+		this.controllable.setControllable(null);
 	}
 
 	public class ClickMenuPanel extends WBase {
