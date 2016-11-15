@@ -130,8 +130,13 @@ public class GuiManager extends WFrame implements IGuiControllable {
 
 		@Override
 		public void update(final WEvent ev, final Area pgp, final Point p) {
-			if (this.areaSelect)
+			if (this.areaSelect) {
 				this.selectArea = new Area(this.startSelectPoint.x(), this.selectAbsY1+this.offset.get(), p.x(), p.y());
+				if (GuiManager.this.height-3<=p.y())
+					scroll(ev, pgp, p, -20);
+				if (p.y()<=3)
+					scroll(ev, pgp, p, 20);
+			}
 			super.update(ev, pgp, p);
 		}
 
@@ -196,7 +201,7 @@ public class GuiManager extends WFrame implements IGuiControllable {
 					GuiManager.row--;
 				scroll(ev, pgp, p, 0);
 			} else
-				scroll(ev, pgp, p, scroll/5);
+				scroll(ev, pgp, p, scroll/2);
 			return super.mouseScrolled(ev, pgp, p, scroll);
 		}
 
@@ -321,9 +326,9 @@ public class GuiManager extends WFrame implements IGuiControllable {
 				boolean select = false;
 				for (final Map.Entry<GalleryLabel, Boolean> line : this.labels.entrySet()) {
 					select = line.getValue();
-					i++;
 					if (select)
 						break;
+					i++;
 				}
 				final int selectFirst = Math.min(i, number);
 				final int selectEnd = Math.max(i, number);
