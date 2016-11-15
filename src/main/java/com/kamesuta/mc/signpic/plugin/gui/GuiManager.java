@@ -418,11 +418,11 @@ public class GuiManager extends WFrame implements IGuiControllable {
 					final Area a = getGuiPosition(pgp);
 					final float left = this.openMenuPoint.x()<80 ? 0 : this.openMenuPoint.x()-80;
 					final float top = this.openMenuPoint.y()>a.y2()-100 ? this.openMenuPoint.y()-100 : this.openMenuPoint.y();
-					final R position = new R(Coord.left(left), Coord.top(top), Coord.height(100), Coord.width(80));
+					final R position = new R(Coord.left(left), Coord.top(top), Coord.height(80), Coord.width(100));
 					add(new GuiClickMenu(position, this, GuiManager.this) {
 						@Override
 						protected void initWidget() {
-							add(new ClickMenuPanel(new R(Coord.left(1), Coord.top(3), Coord.height(15), Coord.width(77.7f)), I18n.format("signpic.gui.manager.open")) {
+							add(new ClickMenuPanel(I18n.format("signpic.gui.manager.open")) {
 								{
 									setEmphasis(true);
 									setIcon(new ResourceLocation("signpic", "textures/logo.png"));
@@ -433,25 +433,25 @@ public class GuiManager extends WFrame implements IGuiControllable {
 									return true;
 								}
 							});
-							add(new ClickMenuPanel(new R(Coord.left(1), Coord.top(18), Coord.height(15), Coord.width(77.7f)), I18n.format("signpic.gui.manager.openbrowzer")) {
+							add(new ClickMenuPanel(I18n.format("signpic.gui.manager.openbrowzer")) {
 								@Override
 								public boolean onClicked(final WEvent ev, final Area pgp, final Point p, final int button) {
 									return true;
 								}
 							});
-							add(new ClickMenuPanel(new R(Coord.left(1), Coord.top(33), Coord.height(15), Coord.width(77.7f)), "sushi") {
+							add(new ClickMenuPanel("sushi") {
 								@Override
 								public boolean onClicked(final WEvent ev, final Area pgp, final Point p, final int button) {
 									return true;
 								}
 							});
-							add(new ClickMenuPanel(new R(Coord.left(1), Coord.top(48), Coord.height(15), Coord.width(77.7f)), "sushi") {
+							add(new ClickMenuPanel("sushi") {
 								@Override
 								public boolean onClicked(final WEvent ev, final Area pgp, final Point p, final int button) {
 									return true;
 								}
 							});
-							add(new ClickMenuPanel(new R(Coord.left(1), Coord.top(63), Coord.height(15), Coord.width(77.7f)), "sushi") {
+							add(new ClickMenuPanel("sushi") {
 								@Override
 								public boolean onClicked(final WEvent ev, final Area pgp, final Point p, final int button) {
 									return true;

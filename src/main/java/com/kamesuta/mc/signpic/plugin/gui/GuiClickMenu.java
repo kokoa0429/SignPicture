@@ -8,6 +8,7 @@ import com.kamesuta.mc.bnnwidget.WBase;
 import com.kamesuta.mc.bnnwidget.WEvent;
 import com.kamesuta.mc.bnnwidget.WPanel;
 import com.kamesuta.mc.bnnwidget.position.Area;
+import com.kamesuta.mc.bnnwidget.position.Coord;
 import com.kamesuta.mc.bnnwidget.position.Point;
 import com.kamesuta.mc.bnnwidget.position.R;
 import com.kamesuta.mc.signpic.render.RenderHelper;
@@ -74,8 +75,8 @@ public class GuiClickMenu extends WPanel {
 		protected boolean emphasis;
 		protected ResourceLocation icon;
 
-		public ClickMenuPanel(final R position, final String text) {
-			super(position);
+		public ClickMenuPanel(final String text) {
+			super(new R(Coord.left(1), Coord.top(3+(15*getContainer().size())), Coord.height(15), Coord.right(2.3f)));
 			this.text = text;
 			setColor(0x00000);
 		}
