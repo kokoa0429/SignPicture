@@ -17,9 +17,9 @@ import net.minecraft.util.ResourceLocation;
 
 public class GuiClickMenu extends WPanel {
 	protected WPanel panel;
-	protected IGuiControllable controllable;
+	protected IKeyControllable controllable;
 
-	public GuiClickMenu(final R position, final WPanel panel, final IGuiControllable controllable) {
+	public GuiClickMenu(final R position, final WPanel panel, final IKeyControllable controllable) {
 		super(position);
 		this.panel = panel;
 		this.controllable = controllable;
@@ -27,7 +27,7 @@ public class GuiClickMenu extends WPanel {
 
 	@Override
 	protected void initWidget() {
-		this.controllable.setControllable(this);
+		this.controllable.setKeyControllable(this);
 		super.initWidget();
 	}
 
@@ -65,7 +65,7 @@ public class GuiClickMenu extends WPanel {
 
 	public void close() {
 		this.panel.remove(this);
-		this.controllable.setControllable(null);
+		this.controllable.setKeyControllable(null);
 	}
 
 	public class ClickMenuPanel extends WBase {

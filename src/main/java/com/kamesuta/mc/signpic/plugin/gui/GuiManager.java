@@ -45,6 +45,7 @@ public class GuiManager extends WFrame implements IGuiControllable {
 	protected final Map<Integer, SignData> data = Maps.newHashMap();
 
 	private WCommon controllGui;
+	private WCommon keyControllGui;
 
 	public GuiManager(final String data, final String size) {
 		this.key = data;
@@ -73,16 +74,37 @@ public class GuiManager extends WFrame implements IGuiControllable {
 	@Override
 	public void setControllable(final WCommon gui) {
 		this.controllGui = gui;
+		this.keyControllGui = gui;
 	}
 
 	@Override
 	public boolean isControllable() {
+		return this.controllGui==null||this.keyControllGui==null;
+	}
+
+	@Override
+	public void setGuiControllable(final WCommon gui) {
+		this.controllGui = gui;
+	}
+
+	@Override
+	public boolean isGuiControllable() {
 		return this.controllGui==null;
 	}
 
 	@Override
+	public void setKeyControllable(final WCommon gui) {
+		this.keyControllGui = gui;
+	}
+
+	@Override
+	public boolean isKeyControllable() {
+		return this.keyControllGui==null;
+	}
+
+	@Override
 	protected void mouseClicked(final int x, final int y, final int button) throws IOException {
-		if (isControllable()) {
+		if (isGuiControllable()) {
 			super.mouseClicked(x, y, button);
 		} else {
 			this.mousebutton = button;
@@ -105,7 +127,7 @@ public class GuiManager extends WFrame implements IGuiControllable {
 
 	@Override
 	protected void mouseClickMove(final int x, final int y, final int button, final long time) {
-		if (isControllable()) {
+		if (isGuiControllable()) {
 			super.mouseClickMove(x, y, button, time);
 		} else {
 			final Area gp = getAbsolute();
