@@ -34,6 +34,7 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 import net.minecraft.client.resources.I18n;
+import net.minecraft.util.ResourceLocation;
 
 public class GuiManager extends WFrame implements IGuiControllable {
 	public static int row = 4;
@@ -140,7 +141,12 @@ public class GuiManager extends WFrame implements IGuiControllable {
 
 		@Override
 		public void update(final WEvent ev, final Area pgp, final Point p) {
-			if (this.areaSelect) {
+			if (this.areaSelect&&!isControllable()) {
+				this.selectArea = null;
+				this.startSelectPoint = null;
+				this.areaSelect = false;
+			}
+			if (this.areaSelect&&this.startSelectPoint!=null) {
 				this.selectArea = new Area(this.startSelectPoint.x(), this.selectAbsY+this.offset.get(), p.x(), p.y());
 				if (height()-3<=p.y())
 					scroll(ev, pgp, p, -20);
@@ -159,11 +165,6 @@ public class GuiManager extends WFrame implements IGuiControllable {
 
 		@Override
 		public boolean mouseClicked(final WEvent ev, final Area pgp, final Point p, final int button) {
-			if (!super.mouseClicked(ev, pgp, p, button)) {
-				selectAll(false);
-				return true;
-			}
-
 			if (button<=1) {
 				this.startSelectPoint = p;
 				this.selectAbsY = p.y()-this.offset.get();
@@ -368,7 +369,47 @@ public class GuiManager extends WFrame implements IGuiControllable {
 					final float left = this.openMenuPoint.x()<80 ? 0 : this.openMenuPoint.x()-80;
 					final float top = this.openMenuPoint.y()>a.y2()-100 ? this.openMenuPoint.y()-100 : this.openMenuPoint.y();
 					final R position = new R(Coord.left(left), Coord.top(top), Coord.height(100), Coord.width(80));
-					add(new GuiDataClickMenu(position, this, GuiManager.this, this.data));
+					add(new GuiClickMenu(position, this, GuiManager.this) {
+						@Override
+						protected void initWidget() {
+							add(new ClickMenuPanel(new R(Coord.left(1), Coord.top(3), Coord.height(15), Coord.width(77.7f)), "sushi") {
+								{
+									setEmphasis(true);
+									setIcon(new ResourceLocation("signpic", "textures/logo.png"));
+								}
+
+								@Override
+								public boolean onClicked(final WEvent ev, final Area pgp, final Point p, final int button) {
+									return true;
+								}
+							});
+							add(new ClickMenuPanel(new R(Coord.left(1), Coord.top(18), Coord.height(15), Coord.width(77.7f)), "sushi") {
+								@Override
+								public boolean onClicked(final WEvent ev, final Area pgp, final Point p, final int button) {
+									return true;
+								}
+							});
+							add(new ClickMenuPanel(new R(Coord.left(1), Coord.top(33), Coord.height(15), Coord.width(77.7f)), "sushi") {
+								@Override
+								public boolean onClicked(final WEvent ev, final Area pgp, final Point p, final int button) {
+									return true;
+								}
+							});
+							add(new ClickMenuPanel(new R(Coord.left(1), Coord.top(48), Coord.height(15), Coord.width(77.7f)), "sushi") {
+								@Override
+								public boolean onClicked(final WEvent ev, final Area pgp, final Point p, final int button) {
+									return true;
+								}
+							});
+							add(new ClickMenuPanel(new R(Coord.left(1), Coord.top(63), Coord.height(15), Coord.width(77.7f)), "sushi") {
+								@Override
+								public boolean onClicked(final WEvent ev, final Area pgp, final Point p, final int button) {
+									return true;
+								}
+							});
+							super.initWidget();
+						}
+					});
 					this.openMenuPoint = null;
 				}
 				super.update(ev, pgp, p);
@@ -403,7 +444,7 @@ public class GuiManager extends WFrame implements IGuiControllable {
 		}
 
 		public class GalleryPanel extends WPanel {
-			protected boolean labelsMouseInside = false;
+			protected boolean labelsMouseInside;
 
 			public GalleryPanel(final R position) {
 				super(position);
@@ -444,6 +485,15 @@ public class GuiManager extends WFrame implements IGuiControllable {
 			public R getNewLabelPosition(final GalleryLabel label, final int row) {
 				final int i = label.i;
 				return new R(Coord.pleft((i%row)/(float) row), Coord.top((i/row)*((height()/row)+3)), Coord.pwidth(1f/(row+.3f)), Coord.height(height()*(1f/(row+.3f))));
+			}
+
+			@Override
+			public boolean mouseClicked(final WEvent ev, final Area pgp, final Point p, final int button) {
+				if (!super.mouseClicked(ev, pgp, p, button)) {
+					selectAll(false);
+					return true;
+				} else
+					return super.mouseClicked(ev, pgp, p, button);
 			}
 
 			public class GalleryLabel extends SignPicLabel {
