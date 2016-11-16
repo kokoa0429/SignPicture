@@ -5,12 +5,14 @@ import static org.lwjgl.opengl.GL11.*;
 import org.lwjgl.input.Keyboard;
 
 import com.kamesuta.mc.bnnwidget.WBase;
+import com.kamesuta.mc.bnnwidget.WCommon;
 import com.kamesuta.mc.bnnwidget.WEvent;
 import com.kamesuta.mc.bnnwidget.WPanel;
 import com.kamesuta.mc.bnnwidget.position.Area;
 import com.kamesuta.mc.bnnwidget.position.Coord;
 import com.kamesuta.mc.bnnwidget.position.Point;
 import com.kamesuta.mc.bnnwidget.position.R;
+import com.kamesuta.mc.signpic.Reference;
 import com.kamesuta.mc.signpic.render.RenderHelper;
 
 import net.minecraft.client.renderer.GlStateManager;
@@ -19,6 +21,8 @@ import net.minecraft.util.ResourceLocation;
 public class GuiClickMenu extends WPanel {
 	protected WPanel panel;
 	protected IKeyControllable controllable;
+	protected int select = -1;
+	protected boolean keySelect;
 
 	public GuiClickMenu(final R position, final WPanel panel, final IKeyControllable controllable) {
 		super(position);
@@ -30,6 +34,34 @@ public class GuiClickMenu extends WPanel {
 	protected void initWidget() {
 		this.controllable.setKeyControllable(this);
 		super.initWidget();
+	}
+
+	@Override
+	public void update(final WEvent ev, final Area pgp, final Point p) {
+		final Area a = getGuiPosition(pgp);
+		if (this.keySelect)
+			this.keySelect = !a.pointInside(p);
+		if (!a.pointInside(p)&&!this.keySelect) {
+			Reference.logger.info("ああああ！");
+			this.select = -1;
+		}
+		for (final WCommon gui : getContainer()) {
+			if (gui instanceof ClickMenuPanel) {
+				final ClickMenuPanel panel = (ClickMenuPanel) gui;
+				if (this.keySelect) {
+					if (panel.i==this.select)
+						panel.select = true;
+					else
+						panel.select = false;
+				} else {
+					if (panel.i!=this.select||!(this.keySelect&&!a.pointInside(p)))
+						panel.select = false;
+					else if (panel.i==this.select)
+						panel.select = true;
+				}
+			}
+		}
+		super.update(ev, pgp, p);
 	}
 
 	@Override
@@ -61,6 +93,16 @@ public class GuiClickMenu extends WPanel {
 	public boolean keyTyped(final WEvent ev, final Area pgp, final Point p, final char c, final int keycode) {
 		if (keycode==Keyboard.KEY_ESCAPE)
 			close();
+		if (keycode==Keyboard.KEY_DOWN) {
+			if (this.select<getContainer().size())
+				this.select++;
+			this.keySelect = true;
+		}
+		if (keycode==Keyboard.KEY_UP) {
+			if (this.select>getContainer().size())
+				this.select--;
+			this.keySelect = true;
+		}
 		return super.keyTyped(ev, pgp, p, c, keycode);
 	}
 
@@ -70,13 +112,16 @@ public class GuiClickMenu extends WPanel {
 	}
 
 	public class ClickMenuPanel extends WBase {
+		protected int i;
 		protected String text;
 		protected int textcolor = 0xffffff;
 		protected boolean emphasis;
+		protected boolean select;
 		protected ResourceLocation icon;
 
 		public ClickMenuPanel(final String text) {
 			super(new R(Coord.left(1), Coord.top(3+(15*getContainer().size())), Coord.height(15), Coord.right(2.3f)));
+			this.i = getContainer().size();
 			this.text = text;
 			setColor(0x00000);
 		}
@@ -110,10 +155,20 @@ public class GuiClickMenu extends WPanel {
 		}
 
 		@Override
+		public void update(final WEvent ev, final Area pgp, final Point p) {
+			final Area a = getGuiPosition(pgp);
+			if (a.pointInside(p)&&!GuiClickMenu.this.keySelect) {
+				GuiClickMenu.this.select = this.i;
+				this.select = true;
+			}
+			super.update(ev, pgp, p);
+		}
+
+		@Override
 		public void draw(final WEvent ev, final Area pgp, final Point p, final float frame, final float popacity) {
 			final Area a = getGuiPosition(pgp);
 			GlStateManager.pushMatrix();
-			if (a.pointInside(p)) {
+			if (this.select) {
 				GlStateManager.color(.7f, .7f, .7f, .7f);
 				RenderHelper.startShape();
 				draw(a, GL_QUADS);

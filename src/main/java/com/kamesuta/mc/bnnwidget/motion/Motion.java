@@ -81,7 +81,7 @@ public abstract class Motion implements IMotion {
 	}
 
 	public static IMotion move(final float end) {
-		return new BlankMotion(end);
+		return new MoveMotion(end);
 	}
 
 	static class EasingMotion extends Motion {
