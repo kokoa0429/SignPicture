@@ -12,7 +12,6 @@ import com.kamesuta.mc.bnnwidget.position.Area;
 import com.kamesuta.mc.bnnwidget.position.Coord;
 import com.kamesuta.mc.bnnwidget.position.Point;
 import com.kamesuta.mc.bnnwidget.position.R;
-import com.kamesuta.mc.signpic.Reference;
 import com.kamesuta.mc.signpic.render.RenderHelper;
 
 import net.minecraft.client.renderer.GlStateManager;
@@ -22,6 +21,7 @@ public class GuiClickMenu extends WPanel {
 	protected WPanel panel;
 	protected IKeyControllable controllable;
 	protected int select = -1;
+	protected int mouseOver = -1;
 	protected boolean keySelect;
 
 	public GuiClickMenu(final R position, final WPanel panel, final IKeyControllable controllable) {
@@ -36,31 +36,42 @@ public class GuiClickMenu extends WPanel {
 		super.initWidget();
 	}
 
+	int mouseOverCache = -1;
+	boolean mouseInsideCache;
+	Point mousePointCashe;
+
 	@Override
 	public void update(final WEvent ev, final Area pgp, final Point p) {
 		final Area a = getGuiPosition(pgp);
-		if (this.keySelect)
-			this.keySelect = !a.pointInside(p);
-		if (!a.pointInside(p)&&!this.keySelect) {
-			Reference.logger.info("ああああ！");
+		final boolean pointInside = a.pointInside(p);
+		if (!pointInside)
+			this.mouseOver = -1;
+		if (pointInside!=this.mouseInsideCache) {
+			this.keySelect = false;
 			this.select = -1;
 		}
+		//		if (pointInside&&p.x()==this.mousePointCashe.x()&&p.y()==this.mousePointCashe.y())
+		//			this.keySelect = false;
 		for (final WCommon gui : getContainer()) {
 			if (gui instanceof ClickMenuPanel) {
 				final ClickMenuPanel panel = (ClickMenuPanel) gui;
-				if (this.keySelect) {
+				if (this.keySelect&&p.x()==this.mousePointCashe.x()&&p.y()==this.mousePointCashe.y()) {
 					if (panel.i==this.select)
 						panel.select = true;
 					else
 						panel.select = false;
 				} else {
-					if (panel.i!=this.select||!(this.keySelect&&!a.pointInside(p)))
-						panel.select = false;
-					else if (panel.i==this.select)
+					if (panel.i==this.mouseOver) {
 						panel.select = true;
+						this.select = this.mouseOver;
+					} else
+						panel.select = false;
 				}
 			}
 		}
+		this.mouseOverCache = this.mouseOver;
+		this.mouseInsideCache = pointInside;
+		this.mousePointCashe = p;
 		super.update(ev, pgp, p);
 	}
 
@@ -93,14 +104,17 @@ public class GuiClickMenu extends WPanel {
 	public boolean keyTyped(final WEvent ev, final Area pgp, final Point p, final char c, final int keycode) {
 		if (keycode==Keyboard.KEY_ESCAPE)
 			close();
-		if (keycode==Keyboard.KEY_DOWN) {
-			if (this.select<getContainer().size())
+		else if (keycode==Keyboard.KEY_DOWN) {
+			if (this.select!=getContainer().size()-1)
 				this.select++;
+			else
+				this.select = 0;
 			this.keySelect = true;
-		}
-		if (keycode==Keyboard.KEY_UP) {
-			if (this.select>getContainer().size())
+		} else if (keycode==Keyboard.KEY_UP) {
+			if (this.select>0)
 				this.select--;
+			else
+				this.select = getContainer().size()-1;
 			this.keySelect = true;
 		}
 		return super.keyTyped(ev, pgp, p, c, keycode);
@@ -156,11 +170,8 @@ public class GuiClickMenu extends WPanel {
 
 		@Override
 		public void update(final WEvent ev, final Area pgp, final Point p) {
-			final Area a = getGuiPosition(pgp);
-			if (a.pointInside(p)&&!GuiClickMenu.this.keySelect) {
-				GuiClickMenu.this.select = this.i;
-				this.select = true;
-			}
+			if (getGuiPosition(pgp).pointInside(p))
+				GuiClickMenu.this.mouseOver = this.i;
 			super.update(ev, pgp, p);
 		}
 
@@ -191,16 +202,23 @@ public class GuiClickMenu extends WPanel {
 
 		@Override
 		public boolean mouseClicked(final WEvent ev, final Area pgp, final Point p, final int button) {
-			final Area a = getGuiPosition(pgp);
-			if (a.pointInside(p)) {
-				if (onClicked(ev, pgp, p, button))
+			if (getGuiPosition(pgp).pointInside(p)) {
+				if (onEnter(ev, pgp, p))
 					close();
 				return true;
 			}
 			return super.mouseClicked(ev, pgp, p, button);
 		}
 
-		public boolean onClicked(final WEvent ev, final Area pgp, final Point p, final int button) {
+		@Override
+		public boolean keyTyped(final WEvent ev, final Area pgp, final Point p, final char c, final int keycode) {
+			if (this.select&&keycode==Keyboard.KEY_RETURN)
+				if (onEnter(ev, pgp, p))
+					close();
+			return super.keyTyped(ev, pgp, p, c, keycode);
+		}
+
+		public boolean onEnter(final WEvent ev, final Area pgp, final Point p) {
 			return true;
 		}
 	}
