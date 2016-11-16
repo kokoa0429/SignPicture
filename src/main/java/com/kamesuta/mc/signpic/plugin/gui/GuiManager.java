@@ -431,7 +431,7 @@ public class GuiManager extends WFrame implements IGuiControllable {
 					final Area a = getGuiPosition(pgp);
 					final float left = this.openMenuPoint.x()<115 ? 0 : this.openMenuPoint.x()-115;
 					final float top = this.openMenuPoint.y()>a.y2()-80 ? this.openMenuPoint.y()-80 : this.openMenuPoint.y();
-					final R position = new R(Coord.left(left), Coord.top(top), Coord.height(80), Coord.width(115));
+					final R position = new R(Coord.left(left), Coord.top(top), Coord.height(79), Coord.width(115));
 					add(new GuiClickMenu(position, this, GuiManager.this) {
 						@Override
 						protected void initWidget() {
@@ -568,7 +568,7 @@ public class GuiManager extends WFrame implements IGuiControllable {
 
 			public class GalleryLabel extends SignPicLabel implements Selectable {
 				private int i;
-				private boolean selected;
+				private boolean select;
 
 				public GalleryLabel(final R position, final int i) {
 					super(position);
@@ -587,12 +587,12 @@ public class GuiManager extends WFrame implements IGuiControllable {
 
 				@Override
 				public void select(final boolean select) {
-					this.selected = select;
+					this.select = select;
 				}
 
 				@Override
 				public boolean isSelect() {
-					return this.selected;
+					return this.select;
 				}
 
 				public boolean isDefault() {
@@ -636,15 +636,15 @@ public class GuiManager extends WFrame implements IGuiControllable {
 						return;
 					super.draw(ev, pgp, p, frame, opacity);
 					if (!isDefault()) {
-						if ((a.pointInside(p)&&!GuiGallery.this.overPanel.isOpenMenu())||this.selected) {
+						if ((a.pointInside(p)&&!GuiGallery.this.overPanel.isOpenMenu())||this.select) {
 							//							if (GuiManager.this.getContainer().size()<=1)
 							//								glColor4f(.6f, .6f, .6f, .7f);
 							//							else
-							glColor4f(.4f, .7f, 1, this.selected ? .7f : .4f);
+							glColor4f(.4f, .7f, 1, this.select ? .7f : .4f);
 							RenderHelper.startShape();
 							drawRect(a);
 						}
-						if ((this.selected||GuiGallery.this.lastSelect==this.i)&&GuiManager.this.getContainer().size()<=1) {
+						if ((this.select||GuiGallery.this.lastSelect==this.i)&&GuiManager.this.getContainer().size()<=1) {
 							glLineWidth(1);
 							glColor4f(.4f, .7f, 1, .8f);
 							RenderHelper.startShape();
@@ -658,7 +658,7 @@ public class GuiManager extends WFrame implements IGuiControllable {
 					final Area a = getGuiPosition(pgp);
 					if (a.pointInside(p)) {
 						if (button<=1) {
-							if (!this.selected) {
+							if (!this.select) {
 								if (!GuiScreen.isShiftKeyDown()) {
 									if (!GuiScreen.isCtrlKeyDown())
 										selectAll(false);
@@ -669,9 +669,10 @@ public class GuiManager extends WFrame implements IGuiControllable {
 									GuiGallery.this.lastSelect = this.i;
 								}
 							} else {
-								if (!GuiScreen.isCtrlKeyDown())
+								if (!GuiScreen.isCtrlKeyDown()) {
 									GuiGallery.this.select(this.i);
-								else
+									GuiGallery.this.lastSelect = this.i;
+								} else
 									GuiGallery.this.labels.put(this, false);
 							}
 						}

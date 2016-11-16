@@ -36,26 +36,31 @@ public class GuiClickMenu extends WPanel {
 		super.initWidget();
 	}
 
-	int mouseOverCache = -1;
+	@Override
+	public boolean add(final WCommon widget) {
+		if (widget instanceof ClickMenuPanel)
+			return super.add(widget);
+		return false;
+	}
+
 	boolean mouseInsideCache;
 	Point mousePointCashe;
 
 	@Override
 	public void update(final WEvent ev, final Area pgp, final Point p) {
 		final Area a = getGuiPosition(pgp);
-		final boolean pointInside = a.pointInside(p);
+		final Area a2 = new Area(a.x1()+1.2f, a.y1()+2, a.x2()-1.2f, a.y1()+2f+15*getContainer().size());
+		final boolean pointInside = a2.pointInside(p);
 		if (!pointInside)
 			this.mouseOver = -1;
 		if (pointInside!=this.mouseInsideCache) {
 			this.keySelect = false;
 			this.select = -1;
 		}
-		//		if (pointInside&&p.x()==this.mousePointCashe.x()&&p.y()==this.mousePointCashe.y())
-		//			this.keySelect = false;
 		for (final WCommon gui : getContainer()) {
 			if (gui instanceof ClickMenuPanel) {
 				final ClickMenuPanel panel = (ClickMenuPanel) gui;
-				if (this.keySelect&&p.x()==this.mousePointCashe.x()&&p.y()==this.mousePointCashe.y()) {
+				if (this.keySelect&&(!pointInside||p.x()==this.mousePointCashe.x()&&p.y()==this.mousePointCashe.y())) {
 					if (panel.i==this.select)
 						panel.select = true;
 					else
@@ -69,7 +74,6 @@ public class GuiClickMenu extends WPanel {
 				}
 			}
 		}
-		this.mouseOverCache = this.mouseOver;
 		this.mouseInsideCache = pointInside;
 		this.mousePointCashe = p;
 		super.update(ev, pgp, p);
@@ -121,8 +125,8 @@ public class GuiClickMenu extends WPanel {
 	}
 
 	public void close() {
-		this.panel.remove(this);
 		this.controllable.setKeyControllable(null);
+		this.panel.remove(this);
 	}
 
 	public class ClickMenuPanel extends WBase {
@@ -134,7 +138,7 @@ public class GuiClickMenu extends WPanel {
 		protected ResourceLocation icon;
 
 		public ClickMenuPanel(final String text) {
-			super(new R(Coord.left(1), Coord.top(3+(15*getContainer().size())), Coord.height(15), Coord.right(2.3f)));
+			super(new R(Coord.left(1.2f), Coord.top(15*getContainer().size()+2), Coord.height(15), Coord.right(1.2f)));
 			this.i = getContainer().size();
 			this.text = text;
 			setColor(0x00000);
