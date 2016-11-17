@@ -2,34 +2,40 @@ package com.kamesuta.mc.signpic.plugin.gui;
 
 import static org.lwjgl.opengl.GL11.*;
 
+import java.awt.Desktop;
+import java.net.URI;
+
 import com.kamesuta.mc.bnnwidget.WEvent;
 import com.kamesuta.mc.bnnwidget.WPanel;
 import com.kamesuta.mc.bnnwidget.position.Area;
 import com.kamesuta.mc.bnnwidget.position.Coord;
 import com.kamesuta.mc.bnnwidget.position.Point;
 import com.kamesuta.mc.bnnwidget.position.R;
+import com.kamesuta.mc.signpic.Reference;
 import com.kamesuta.mc.signpic.entry.EntryId;
+import com.kamesuta.mc.signpic.entry.content.ContentId;
 import com.kamesuta.mc.signpic.plugin.SignData;
 import com.kamesuta.mc.signpic.plugin.gui.GuiManager.GuiGallery.GalleryPanel.GalleryLabel;
 import com.kamesuta.mc.signpic.render.RenderHelper;
 
+import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.resources.I18n;
 import net.minecraft.util.ResourceLocation;
 
-public class MouseOverPanel extends WPanel {
+public class GuiMouseOver extends WPanel {
 	protected final String localizationOwner;
 	protected String uri;
 	protected String world;
 	protected String owner;
 	protected GalleryLabel label;
 
-	public MouseOverPanel(final R position) {
+	public GuiMouseOver(final R position) {
 		super(position);
 		this.localizationOwner = I18n.format("signpic.gui.manager.owner");
 	}
 
 	public void setLabel(final GalleryLabel label) {
-		if (this.label==label)
+		if (this.label==label||isOpenMenu())
 			return;
 
 		this.label = label;
@@ -78,7 +84,7 @@ public class MouseOverPanel extends WPanel {
 			final float left = this.openMenuPoint.x()<115 ? 0 : this.openMenuPoint.x()-115;
 			final float top = this.openMenuPoint.y()>a.y2()-80 ? this.openMenuPoint.y()-80 : this.openMenuPoint.y();
 			final R position = new R(Coord.left(left), Coord.top(top), Coord.height(79), Coord.width(115));
-			add(new GuiClickMenu(position, this, (IGuiControllable) ev.owner) {
+			add(new GuiClickMenu(position, this, (IControllable) ev.owner) {
 				@Override
 				protected void initWidget() {
 					add(new ClickMenuPanel(I18n.format("signpic.gui.manager.open")) {
@@ -95,6 +101,15 @@ public class MouseOverPanel extends WPanel {
 					add(new ClickMenuPanel(I18n.format("signpic.gui.manager.openbrowzer")) {
 						@Override
 						public boolean onEnter(final WEvent ev, final Area pgp, final Point p) {
+							try {
+								final ContentId id = GuiMouseOver.this.label.getEntryId().getContentId();
+								if (id!=null) {
+									final URI uri = new URI(id.getURI());
+									Desktop.getDesktop().browse(uri);
+								}
+							} catch (final Exception e) {
+								Reference.logger.error(e);
+							}
 							return true;
 						}
 					});
@@ -133,21 +148,20 @@ public class MouseOverPanel extends WPanel {
 			final float y1 = p.y()>25 ? p.y()-25 : p.y();
 			final float y2 = p.y()>25 ? p.y() : p.y()+25;
 			final Area overlay = new Area(x1, y1, x2, y2);
-			glColor4f(0, 0, 0, 1);
+			GlStateManager.color(0, 0, 0, 1);
 			RenderHelper.startShape();
 			drawRect(overlay);
 			glLineWidth(4f);
-			glColor4f(.1f, 0, .2f, 1);
+			GlStateManager.color(.1f, 0, .2f, 1);
 			draw(overlay, GL_LINE_LOOP);
-			glPushMatrix();
-			glTranslated(overlay.minX()+overlay.w()/2, overlay.minY()+overlay.h()/2, 0);
+			GlStateManager.pushMatrix();
+			GlStateManager.translate(overlay.minX()+overlay.w()/2, overlay.minY()+overlay.h()/2, 0);
 			RenderHelper.startTexture();
 			drawString(this.owner, overlay.minX()-overlay.maxX()+70, overlay.minY()-overlay.maxY()+15, 0xffffff);
 			drawStringR(this.world, overlay.minX()-overlay.maxX()+195, overlay.minY()-overlay.maxY()+15, 0xffffff);
 			drawString(this.uri, overlay.minX()-overlay.maxX()+70, overlay.minY()-overlay.maxY()+26, 0xffffff);
-			glPopMatrix();
+			GlStateManager.popMatrix();
 		}
-
 		super.draw(ev, pgp, p, frame, popacity);
 	}
 }

@@ -43,8 +43,8 @@ public class GuiClickMenu extends WPanel {
 		return false;
 	}
 
-	boolean mouseInsideCache;
-	Point mousePointCashe;
+	private boolean mouseInsideCache;
+	private Point mousePointCashe;
 
 	@Override
 	public void update(final WEvent ev, final Area pgp, final Point p) {

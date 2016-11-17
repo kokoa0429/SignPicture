@@ -35,7 +35,7 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 
-public class GuiManager extends WFrame implements IGuiControllable {
+public class GuiManager extends WFrame implements IControllable {
 	public static int row = 4;
 
 	public String key;
@@ -137,7 +137,7 @@ public class GuiManager extends WFrame implements IGuiControllable {
 
 	public class GuiGallery extends WPanel {
 		protected GalleryPanel panel;
-		protected MouseOverPanel overPanel;
+		protected GuiMouseOver overPanel;
 		protected MCoord offset;
 		protected int lastSelect = -1;
 
@@ -145,7 +145,7 @@ public class GuiManager extends WFrame implements IGuiControllable {
 			super(position);
 			this.offset = MCoord.top(0);
 			this.panel = new GalleryPanel(new R(Coord.left(0), this.offset, Coord.right(0), Coord.bottom(0)));
-			this.overPanel = new MouseOverPanel(new R(Coord.left(0), Coord.top(0), Coord.right(0), Coord.bottom(0)));
+			this.overPanel = new GuiMouseOver(new R(Coord.left(0), Coord.top(0), Coord.right(0), Coord.bottom(0)));
 		}
 
 		private Area selectArea;
