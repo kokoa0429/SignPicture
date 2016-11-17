@@ -81,6 +81,7 @@ signpic.gui.notice.uploadfailed=Upload Failed: §7%s
 signpic.gui.notice.downloading=Downloading %s
 signpic.gui.notice.downloaded=Finished downloading %s
 signpic.gui.notice.downloadfailed=Download Failed: §7%s
+signpic.gui.notice.openblowzerfaild=Could not open browser: §7%s
 
 # Upload UI
 signpic.ui.title=SignPicture!File

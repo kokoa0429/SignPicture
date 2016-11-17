@@ -46,6 +46,7 @@ signpic.gui.notice.uploadfailed=アップロード失敗: §7%s
 signpic.gui.notice.downloading=ダウンロード開始 %s
 signpic.gui.notice.downloaded=ダウンロード完了 %s
 signpic.gui.notice.downloadfailed=ダウンロード失敗: §7%s
+signpic.gui.notice.openblowzerfaild=ブラウザを開けませんでした: §7%s
 
 # Upload UI
 signpic.ui.description=ファイルアップローダー!

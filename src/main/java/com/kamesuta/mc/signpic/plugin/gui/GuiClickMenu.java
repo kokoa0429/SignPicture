@@ -132,8 +132,9 @@ public class GuiClickMenu extends WPanel {
 	public class ClickMenuPanel extends WBase {
 		protected int i;
 		protected String text;
-		protected int textcolor = 0xffffff;
+		protected int textcolor = 0x00000;
 		protected boolean emphasis;
+		protected boolean available = true;
 		protected boolean select;
 		protected ResourceLocation icon;
 
@@ -141,15 +142,10 @@ public class GuiClickMenu extends WPanel {
 			super(new R(Coord.left(1.2f), Coord.top(15*getContainer().size()+2), Coord.height(15), Coord.right(1.2f)));
 			this.i = getContainer().size();
 			this.text = text;
-			setColor(0x00000);
-		}
-
-		public void setColor(final int color) {
-			this.textcolor = color;
 		}
 
 		public int getColor() {
-			return this.textcolor;
+			return isAvailable() ? this.textcolor : 0xaaaaaa;
 		}
 
 		public String getText() {
@@ -172,6 +168,14 @@ public class GuiClickMenu extends WPanel {
 			return this.icon;
 		}
 
+		public void setAvailable(final boolean available) {
+			this.available = available;
+		}
+
+		public boolean isAvailable() {
+			return this.available;
+		}
+
 		@Override
 		public void update(final WEvent ev, final Area pgp, final Point p) {
 			if (getGuiPosition(pgp).pointInside(p))
@@ -183,10 +187,10 @@ public class GuiClickMenu extends WPanel {
 		public void draw(final WEvent ev, final Area pgp, final Point p, final float frame, final float popacity) {
 			final Area a = getGuiPosition(pgp);
 			GlStateManager.pushMatrix();
-			if (this.select) {
+			if (this.select&&isAvailable()) {
 				GlStateManager.color(.7f, .7f, .7f, .7f);
 				RenderHelper.startShape();
-				draw(a, GL_QUADS);
+				drawRect(a);
 			}
 			GlStateManager.translate(this.emphasis ? a.minX()+2.5f : a.minX(), a.minY(), 0);
 			if (this.emphasis)
@@ -206,7 +210,7 @@ public class GuiClickMenu extends WPanel {
 
 		@Override
 		public boolean mouseClicked(final WEvent ev, final Area pgp, final Point p, final int button) {
-			if (getGuiPosition(pgp).pointInside(p)) {
+			if (getGuiPosition(pgp).pointInside(p)&&isAvailable()) {
 				if (onEnter(ev, pgp, p))
 					close();
 				return true;
@@ -216,7 +220,7 @@ public class GuiClickMenu extends WPanel {
 
 		@Override
 		public boolean keyTyped(final WEvent ev, final Area pgp, final Point p, final char c, final int keycode) {
-			if (this.select&&keycode==Keyboard.KEY_RETURN)
+			if (this.select&&keycode==Keyboard.KEY_RETURN&&isAvailable())
 				if (onEnter(ev, pgp, p))
 					close();
 			return super.keyTyped(ev, pgp, p, c, keycode);

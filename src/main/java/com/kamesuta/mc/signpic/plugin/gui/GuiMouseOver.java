@@ -11,9 +11,9 @@ import com.kamesuta.mc.bnnwidget.position.Area;
 import com.kamesuta.mc.bnnwidget.position.Coord;
 import com.kamesuta.mc.bnnwidget.position.Point;
 import com.kamesuta.mc.bnnwidget.position.R;
-import com.kamesuta.mc.signpic.Reference;
 import com.kamesuta.mc.signpic.entry.EntryId;
 import com.kamesuta.mc.signpic.entry.content.ContentId;
+import com.kamesuta.mc.signpic.gui.OverlayFrame;
 import com.kamesuta.mc.signpic.plugin.SignData;
 import com.kamesuta.mc.signpic.plugin.gui.GuiManager.GuiGallery.GalleryPanel.GalleryLabel;
 import com.kamesuta.mc.signpic.render.RenderHelper;
@@ -99,16 +99,21 @@ public class GuiMouseOver extends WPanel {
 						}
 					});
 					add(new ClickMenuPanel(I18n.format("signpic.gui.manager.openbrowzer")) {
+						{
+							this.id = GuiMouseOver.this.label.getEntryId().getContentId();
+							if (this.id.getID()==this.id.getURI())
+								setAvailable(false);
+						}
+
+						private ContentId id;
+
 						@Override
 						public boolean onEnter(final WEvent ev, final Area pgp, final Point p) {
 							try {
-								final ContentId id = GuiMouseOver.this.label.getEntryId().getContentId();
-								if (id!=null) {
-									final URI uri = new URI(id.getURI());
-									Desktop.getDesktop().browse(uri);
-								}
+								final URI uri = new URI(this.id.getURI());
+								Desktop.getDesktop().browse(uri);
 							} catch (final Exception e) {
-								Reference.logger.error(e);
+								OverlayFrame.instance.pane.addNotice1(I18n.format("signpic.gui.notice.openblowzerfaild", e.getClass().getName()), 2);
 							}
 							return true;
 						}
