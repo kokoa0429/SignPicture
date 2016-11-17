@@ -68,11 +68,11 @@ public class Area {
 		return this.x1!=this.x2&&this.y1!=this.y2;
 	}
 
-	public final boolean pointInside(final Point p) {
+	public boolean pointInside(final Point p) {
 		return p.x>=this.x1&&p.x<this.x2&&p.y>=this.y1&&p.y<this.y2;
 	}
 
-	public final boolean areaOverlap(final Area a) {
+	public boolean areaOverlap(final Area a) {
 		return !(a.maxX()<minX()||a.minX()>maxX()||a.minY()>maxY()||a.maxY()<minY());
 	}
 

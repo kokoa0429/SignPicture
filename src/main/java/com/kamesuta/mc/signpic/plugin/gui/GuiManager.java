@@ -17,12 +17,13 @@ import com.kamesuta.mc.bnnwidget.WEvent;
 import com.kamesuta.mc.bnnwidget.WFrame;
 import com.kamesuta.mc.bnnwidget.WPanel;
 import com.kamesuta.mc.bnnwidget.motion.Easings;
-import com.kamesuta.mc.bnnwidget.motion.MCoord;
 import com.kamesuta.mc.bnnwidget.motion.Motion;
 import com.kamesuta.mc.bnnwidget.position.Area;
 import com.kamesuta.mc.bnnwidget.position.Coord;
 import com.kamesuta.mc.bnnwidget.position.Point;
 import com.kamesuta.mc.bnnwidget.position.R;
+import com.kamesuta.mc.bnnwidget.var.V;
+import com.kamesuta.mc.bnnwidget.var.VMotion;
 import com.kamesuta.mc.signpic.Reference;
 import com.kamesuta.mc.signpic.entry.EntryId;
 import com.kamesuta.mc.signpic.gui.SignPicLabel;
@@ -46,7 +47,9 @@ public class GuiManager extends WFrame implements IControllable {
 	private WCommon controllGui;
 	private WCommon keyControllGui;
 
-	public GuiManager(final String data, final String size) {
+	public GuiManager(final GuiScreen parent, final String data, final String size) {
+		super(parent);
+		Reference.logger.info("hey!");
 		this.key = data;
 		this.size = NumberUtils.toInt(size);
 		this.gallery = new GuiGallery(new R(Coord.left(0), Coord.top(0), Coord.right(0), Coord.bottom(0)));
@@ -138,13 +141,13 @@ public class GuiManager extends WFrame implements IControllable {
 	public class GuiGallery extends WPanel {
 		protected GalleryPanel panel;
 		protected GuiMouseOver overPanel;
-		protected MCoord offset;
+		protected VMotion offset;
 		protected int lastSelect = -1;
 
 		public GuiGallery(final R position) {
 			super(position);
-			this.offset = MCoord.top(0);
-			this.panel = new GalleryPanel(new R(Coord.left(0), this.offset, Coord.right(0), Coord.bottom(0)));
+			this.offset = V.pm(0);
+			this.panel = new GalleryPanel(new R(Coord.left(0), Coord.top(this.offset), Coord.right(0), Coord.bottom(0)));
 			this.overPanel = new GuiMouseOver(new R(Coord.left(0), Coord.top(0), Coord.right(0), Coord.bottom(0)));
 		}
 
@@ -232,7 +235,7 @@ public class GuiManager extends WFrame implements IControllable {
 		public void draw(final WEvent ev, final Area pgp, final Point p, final float frame, final float popacity) {
 			RenderHelper.startShape();
 			GlStateManager.color(0f, 0f, 0f, .5f);
-			drawRect(getGuiPosition(pgp));
+			draw(getGuiPosition(pgp));
 			super.draw(ev, pgp, p, frame, popacity);
 			if (this.selectArea!=null) {
 				glColor4f(.25f, .3f, 1, .4f);
@@ -503,7 +506,7 @@ public class GuiManager extends WFrame implements IControllable {
 							//							else
 							glColor4f(.4f, .7f, 1, this.select ? .7f : .4f);
 							RenderHelper.startShape();
-							drawRect(a);
+							draw(a);
 						}
 						if ((this.select||GuiGallery.this.lastSelect==this.i)&&GuiManager.this.getContainer().size()<=1) {
 							glLineWidth(1);

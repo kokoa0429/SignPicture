@@ -155,16 +155,19 @@ public class GuiMouseOver extends WPanel {
 			final Area overlay = new Area(x1, y1, x2, y2);
 			GlStateManager.color(0, 0, 0, 1);
 			RenderHelper.startShape();
-			drawRect(overlay);
+			draw(overlay);
 			glLineWidth(4f);
 			GlStateManager.color(.1f, 0, .2f, 1);
 			draw(overlay, GL_LINE_LOOP);
 			GlStateManager.pushMatrix();
 			GlStateManager.translate(overlay.minX()+overlay.w()/2, overlay.minY()+overlay.h()/2, 0);
 			RenderHelper.startTexture();
-			drawString(this.owner, overlay.minX()-overlay.maxX()+70, overlay.minY()-overlay.maxY()+15, 0xffffff);
-			drawStringR(this.world, overlay.minX()-overlay.maxX()+195, overlay.minY()-overlay.maxY()+15, 0xffffff);
-			drawString(this.uri, overlay.minX()-overlay.maxX()+70, overlay.minY()-overlay.maxY()+26, 0xffffff);
+			fontColor(0xffffff);
+			drawString(this.owner, overlay.minX()-overlay.maxX()+70, overlay.minY()-overlay.maxY()+15, 0, 0, Align.LEFT, VerticalAlign.TOP, false);
+			fontColor(0xffffff);
+			drawString(this.world, overlay.minX()-overlay.maxX()+195, overlay.minY()-overlay.maxY()+15, 0, 0, Align.RIGHT, VerticalAlign.TOP, false);
+			fontColor(0xffffff);
+			drawString(this.uri, overlay.minX()-overlay.maxX()+70, overlay.minY()-overlay.maxY()+26, 0, 0, Align.LEFT, VerticalAlign.TOP, false);
 			GlStateManager.popMatrix();
 		}
 		super.draw(ev, pgp, p, frame, popacity);

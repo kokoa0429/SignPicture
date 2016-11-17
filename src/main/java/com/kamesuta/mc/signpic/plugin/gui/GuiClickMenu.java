@@ -190,7 +190,7 @@ public class GuiClickMenu extends WPanel {
 			if (this.select&&isAvailable()) {
 				GlStateManager.color(.7f, .7f, .7f, .7f);
 				RenderHelper.startShape();
-				drawRect(a);
+				draw(a);
 			}
 			GlStateManager.translate(this.emphasis ? a.minX()+2.5f : a.minX(), a.minY(), 0);
 			if (this.emphasis)
@@ -199,11 +199,13 @@ public class GuiClickMenu extends WPanel {
 			font().drawString(this.emphasis ? "§l"+getText() : getText(), 15, 2, getColor());
 			GlStateManager.popMatrix();
 			if (getIcon()!=null) {
+				GlStateManager.pushMatrix();
 				final Area iconArea = new Area(a.x1()+.25f, a.y1()+.25f, a.x1()+14.75f, a.y2()-.25f);
 				texture().bindTexture(getIcon());
 				GlStateManager.color(1, 1, 1, 1);
 				RenderHelper.startTexture();
-				drawTexturedModalRect(iconArea);
+				RenderHelper.drawRectTexture(GL_QUADS, a.x1()+.25f, a.y1()+.25f, a.x1()+14.75f, a.y2()-.25f, 0, 0, 1, 1);
+				GlStateManager.popMatrix();
 			}
 			super.draw(ev, pgp, p, frame, popacity);
 		}
