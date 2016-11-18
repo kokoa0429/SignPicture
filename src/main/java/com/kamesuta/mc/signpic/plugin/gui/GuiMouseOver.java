@@ -84,61 +84,62 @@ public class GuiMouseOver extends WPanel {
 			final float left = this.openMenuPoint.x()<115 ? 0 : this.openMenuPoint.x()-115;
 			final float top = this.openMenuPoint.y()>a.y2()-80 ? this.openMenuPoint.y()-80 : this.openMenuPoint.y();
 			final R position = new R(Coord.left(left), Coord.top(top), Coord.height(79), Coord.width(115));
-			add(new GuiClickMenu(position, this, (IControllable) ev.owner) {
-				@Override
-				protected void initWidget() {
-					add(new ClickMenuPanel(I18n.format("signpic.gui.manager.open")) {
-						{
-							setEmphasis(true);
-							setIcon(new ResourceLocation("signpic", "textures/logo.png"));
-						}
-
-						@Override
-						public boolean onEnter(final WEvent ev, final Area pgp, final Point p) {
-							return true;
-						}
-					});
-					add(new ClickMenuPanel(I18n.format("signpic.gui.manager.openbrowzer")) {
-						{
-							this.id = GuiMouseOver.this.label.getEntryId().getContentId();
-							if (this.id.getID()==this.id.getURI())
-								setAvailable(false);
-						}
-
-						private ContentId id;
-
-						@Override
-						public boolean onEnter(final WEvent ev, final Area pgp, final Point p) {
-							try {
-								final URI uri = new URI(this.id.getURI());
-								Desktop.getDesktop().browse(uri);
-							} catch (final Exception e) {
-								OverlayFrame.instance.pane.addNotice1(I18n.format("signpic.gui.notice.openblowzerfaild", e.getClass().getName()), 2);
+			if (ev.owner instanceof IControllable)
+				add(new GuiClickMenu(position, this, (IControllable) ev.owner) {
+					@Override
+					protected void initWidget() {
+						add(new ClickMenuPanel(I18n.format("signpic.gui.manager.open")) {
+							{
+								setEmphasis(true);
+								setIcon(new ResourceLocation("signpic", "textures/logo.png"));
 							}
-							return true;
-						}
-					});
-					add(new ClickMenuPanel("sushi") {
-						@Override
-						public boolean onEnter(final WEvent ev, final Area pgp, final Point p) {
-							return true;
-						}
-					});
-					add(new ClickMenuPanel("sushi") {
-						@Override
-						public boolean onEnter(final WEvent ev, final Area pgp, final Point p) {
-							return true;
-						}
-					});
-					add(new ClickMenuPanel("sushi") {
-						@Override
-						public boolean onEnter(final WEvent ev, final Area pgp, final Point p) {
-							return true;
-						}
-					});
-					super.initWidget();
-				}
-			});
+
+							@Override
+							public boolean onEnter(final WEvent ev, final Area pgp, final Point p) {
+								return true;
+							}
+						});
+						add(new ClickMenuPanel(I18n.format("signpic.gui.manager.openbrowzer")) {
+							{
+								this.id = GuiMouseOver.this.label.getEntryId().getContentId();
+								if (this.id.getID()==this.id.getURI())
+									setAvailable(false);
+							}
+
+							private ContentId id;
+
+							@Override
+							public boolean onEnter(final WEvent ev, final Area pgp, final Point p) {
+								try {
+									final URI uri = new URI(this.id.getURI());
+									Desktop.getDesktop().browse(uri);
+								} catch (final Exception e) {
+									OverlayFrame.instance.pane.addNotice1(I18n.format("signpic.gui.notice.openblowzerfaild", e.getClass().getName()), 2);
+								}
+								return true;
+							}
+						});
+						add(new ClickMenuPanel("sushi") {
+							@Override
+							public boolean onEnter(final WEvent ev, final Area pgp, final Point p) {
+								return true;
+							}
+						});
+						add(new ClickMenuPanel("sushi") {
+							@Override
+							public boolean onEnter(final WEvent ev, final Area pgp, final Point p) {
+								return true;
+							}
+						});
+						add(new ClickMenuPanel("sushi") {
+							@Override
+							public boolean onEnter(final WEvent ev, final Area pgp, final Point p) {
+								return true;
+							}
+						});
+						super.initWidget();
+					}
+				});
 			this.openMenuPoint = null;
 		}
 		super.update(ev, pgp, p);

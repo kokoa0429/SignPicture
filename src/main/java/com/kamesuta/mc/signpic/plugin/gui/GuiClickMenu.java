@@ -50,17 +50,17 @@ public class GuiClickMenu extends WPanel {
 	public void update(final WEvent ev, final Area pgp, final Point p) {
 		final Area a = getGuiPosition(pgp);
 		final Area a2 = new Area(a.x1()+1.2f, a.y1()+2, a.x2()-1.2f, a.y1()+2f+15*getContainer().size());
-		final boolean pointInside = a2.pointInside(p);
-		if (!pointInside)
+		final boolean mouseInside = a2.pointInside(p);
+		if (!mouseInside)
 			this.mouseOver = -1;
-		if (pointInside!=this.mouseInsideCache) {
+		if (mouseInside!=this.mouseInsideCache) {
 			this.keySelect = false;
 			this.select = -1;
 		}
 		for (final WCommon gui : getContainer()) {
 			if (gui instanceof ClickMenuPanel) {
 				final ClickMenuPanel panel = (ClickMenuPanel) gui;
-				if (this.keySelect&&(!pointInside||p.x()==this.mousePointCashe.x()&&p.y()==this.mousePointCashe.y())) {
+				if (this.keySelect&&(!mouseInside||p.x()==this.mousePointCashe.x()&&p.y()==this.mousePointCashe.y())) {
 					if (panel.i==this.select)
 						panel.select = true;
 					else
@@ -74,24 +74,25 @@ public class GuiClickMenu extends WPanel {
 				}
 			}
 		}
-		this.mouseInsideCache = pointInside;
+		this.mouseInsideCache = mouseInside;
 		this.mousePointCashe = p;
+
 		super.update(ev, pgp, p);
 	}
 
 	@Override
 	public void draw(final WEvent ev, final Area pgp, final Point p, final float frame, final float popacity) {
 		final Area a = getGuiPosition(pgp);
-		glColor4f(0, 0, 0, .6f);
+		GlStateManager.color(0, 0, 0, .6f);
 		RenderHelper.startShape();
-		draw(new Area(a.x1()+4, a.y1()+4, a.x2()+1, a.y2()+1.5f), GL_QUADS);
-		glPushMatrix();
-		glColor4f(.85f, .85f, .85f, 1);
-		draw(a, GL_QUADS);
+		draw(a.x1()+4, a.y1()+4, a.x2()+1, a.y2()+1.5f);
+		GlStateManager.pushMatrix();
+		GlStateManager.color(.85f, .85f, .85f, 1);
+		draw(a);
 		glLineWidth(1f);
-		glColor4f(.6f, .6f, .6f, 1);
+		GlStateManager.color(.6f, .6f, .6f, 1);
 		draw(a, GL_LINE_LOOP);
-		glPopMatrix();
+		GlStateManager.popMatrix();
 
 		super.draw(ev, pgp, p, frame, popacity);
 	}
@@ -200,7 +201,6 @@ public class GuiClickMenu extends WPanel {
 			GlStateManager.popMatrix();
 			if (getIcon()!=null) {
 				GlStateManager.pushMatrix();
-				final Area iconArea = new Area(a.x1()+.25f, a.y1()+.25f, a.x1()+14.75f, a.y2()-.25f);
 				texture().bindTexture(getIcon());
 				GlStateManager.color(1, 1, 1, 1);
 				RenderHelper.startTexture();
