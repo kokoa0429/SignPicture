@@ -13,6 +13,7 @@ import com.kamesuta.mc.signpic.information.Informations;
 import com.kamesuta.mc.signpic.plugin.packet.PacketHandler;
 import com.kamesuta.mc.signpic.render.SignPicRender;
 
+import net.minecraft.client.gui.GuiScreen;
 import net.minecraftforge.client.event.GuiOpenEvent;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.client.event.MouseEvent;
@@ -46,6 +47,12 @@ public class CoreHandler {
 		PacketHandler.init();
 		this.informationHandler.init();
 		this.apiHandler.init();
+	}
+
+	private GuiScreen guiLater;
+
+	public void openLater(final GuiScreen s) {
+		this.guiLater = s;
 	}
 
 	@SubscribeEvent
@@ -97,6 +104,10 @@ public class CoreHandler {
 	@SubscribeEvent
 	public void onTick(final ClientTickEvent event) {
 		if (event.phase==Phase.END) {
+			if (this.guiLater!=null) {
+				Client.mc.displayGuiScreen(this.guiLater);
+				this.guiLater = null;
+			}
 			Client.startSection("signpic_load");
 			debugKey();
 			this.signEntryManager.onTick();

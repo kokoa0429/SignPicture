@@ -49,7 +49,8 @@ public class PacketHandler {
 		final SignPicturePacket packet = gson.fromJson(data, SignPicturePacket.class);
 		if (packet!=null) {
 			if (StringUtils.equals(packet.command, "open")) {
-				Client.mc.displayGuiScreen(new GuiManager(packet.token, packet.data));
+				Client.handler.openLater(new GuiManager(packet.token, packet.data));
+				//				Client.handler.openLater(new DebugGui(Client.mc.currentScreen));
 			} else if (StringUtils.equals(packet.command, "data")) {
 				if (Client.mc.currentScreen instanceof GuiManager)
 					((GuiManager) Client.mc.currentScreen).data(packet.token, packet.data);

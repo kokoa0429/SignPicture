@@ -40,7 +40,6 @@ public class GuiManager extends WFrame implements IControllable {
 	public static int row = 4;
 
 	public String key;
-	protected final GuiGallery gallery;
 	protected int size;
 	protected final Map<Integer, SignData> data = Maps.newHashMap();
 
@@ -48,10 +47,8 @@ public class GuiManager extends WFrame implements IControllable {
 	private WCommon keyControllGui;
 
 	public GuiManager(final String data, final String size) {
-		Reference.logger.info("hey!");
 		this.key = data;
 		this.size = NumberUtils.toInt(size);
-		this.gallery = new GuiGallery(new R(Coord.left(0), Coord.top(0), Coord.right(0), Coord.bottom(0)));
 	}
 
 	public void data(final String token, final String s) {
@@ -62,14 +59,20 @@ public class GuiManager extends WFrame implements IControllable {
 
 	@Override
 	protected void init() {
+		super.init();
 		Keyboard.enableRepeatEvents(true);
-		add(this.gallery);
+	}
+
+	@Override
+	protected void initWidget() {
+		add(new GuiGallery(R.diff(0, 0, 0, 0)));
+		super.initWidget();
 	}
 
 	@Override
 	public void onGuiClosed() {
-		Keyboard.enableRepeatEvents(false);
 		super.onGuiClosed();
+		Keyboard.enableRepeatEvents(false);
 	}
 
 	@Override
@@ -331,7 +334,7 @@ public class GuiManager extends WFrame implements IControllable {
 
 		@Override
 		public boolean keyTyped(final WEvent ev, final Area pgp, final Point p, final char c, final int keycode) {
-			if (GuiScreen.isCtrlKeyDown()&&keycode==Keyboard.KEY_A)
+			if (isKeyComboCtrlA(keycode))
 				selectAll(true);
 
 			if (keycode==Keyboard.KEY_UP||keycode==Keyboard.KEY_DOWN||keycode==Keyboard.KEY_LEFT||keycode==Keyboard.KEY_RIGHT) {
