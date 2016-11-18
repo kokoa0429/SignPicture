@@ -47,8 +47,7 @@ public class GuiManager extends WFrame implements IControllable {
 	private WCommon controllGui;
 	private WCommon keyControllGui;
 
-	public GuiManager(final GuiScreen parent, final String data, final String size) {
-		super(parent);
+	public GuiManager(final String data, final String size) {
 		Reference.logger.info("hey!");
 		this.key = data;
 		this.size = NumberUtils.toInt(size);
@@ -146,7 +145,7 @@ public class GuiManager extends WFrame implements IControllable {
 
 		public GuiGallery(final R position) {
 			super(position);
-			this.offset = V.pm(0);
+			this.offset = V.am(0);
 			this.panel = new GalleryPanel(new R(Coord.left(0), Coord.top(this.offset), Coord.right(0), Coord.bottom(0)));
 			this.overPanel = new GuiMouseOver(new R(Coord.left(0), Coord.top(0), Coord.right(0), Coord.bottom(0)));
 		}
@@ -238,7 +237,7 @@ public class GuiManager extends WFrame implements IControllable {
 			draw(getGuiPosition(pgp));
 			super.draw(ev, pgp, p, frame, popacity);
 			if (this.selectArea!=null) {
-				glColor4f(.25f, .3f, 1, .4f);
+				GlStateManager.color(.25f, .3f, 1, .4f);
 				RenderHelper.startShape();
 				w.begin(GL_QUADS, DefaultVertexFormats.POSITION);
 				w.pos(this.selectArea.minX(), this.selectArea.minY(), 0).endVertex();
@@ -247,7 +246,7 @@ public class GuiManager extends WFrame implements IControllable {
 				w.pos(this.selectArea.maxX(), this.selectArea.minY(), 0).endVertex();
 				t.draw();
 				glLineWidth(1.5f);
-				glColor4f(.2f, .3f, 1, .6f);
+				GlStateManager.color(.2f, .3f, 1, .6f);
 				draw(this.selectArea, GL_LINE_LOOP);
 			}
 		}
@@ -504,13 +503,13 @@ public class GuiManager extends WFrame implements IControllable {
 							//							if (GuiManager.this.getContainer().size()<=1)
 							//								glColor4f(.6f, .6f, .6f, .7f);
 							//							else
-							glColor4f(.4f, .7f, 1, this.select ? .7f : .4f);
+							GlStateManager.color(.4f, .7f, 1, this.select ? .7f : .4f);
 							RenderHelper.startShape();
 							draw(a);
 						}
 						if ((this.select||GuiGallery.this.lastSelect==this.i)&&GuiManager.this.getContainer().size()<=1) {
 							glLineWidth(1);
-							glColor4f(.4f, .7f, 1, .8f);
+							GlStateManager.color(.4f, .7f, 1, .8f);
 							RenderHelper.startShape();
 							draw(a, GL_LINE_LOOP);
 						}

@@ -1,7 +1,5 @@
 package com.kamesuta.mc.signpic.gui;
 
-import static org.lwjgl.opengl.GL11.*;
-
 import org.lwjgl.util.Timer;
 
 import com.kamesuta.mc.bnnwidget.WBase;
@@ -47,7 +45,7 @@ public class GuiTask extends WPanel {
 		add(new WPanel(new R()) {
 			@Override
 			protected void initWidget() {
-				add(new WPanel(new R(Coord.right(V.of(V.combine(V.p(-1), GuiTask.this.oright), V.p(0f), GuiTask.this.right)))) {
+				add(new WPanel(new R(Coord.right(V.per(V.combine(V.p(-1), GuiTask.this.oright), V.p(0f), GuiTask.this.right)))) {
 					protected Timer showtime = new Timer();
 
 					public void show(final float j) {
@@ -58,7 +56,7 @@ public class GuiTask extends WPanel {
 					public void draw(final WEvent ev, final Area pgp, final Point p, final float frame, final float opacity) {
 						final Area a = getGuiPosition(pgp);
 						RenderHelper.startShape();
-						glColor4f(0f, 0f, 0f, .6f);
+						GlStateManager.color(0f, 0f, 0f, .6f);
 						draw(a);
 						super.draw(ev, pgp, p, frame, opacity);
 					}
@@ -105,7 +103,7 @@ public class GuiTask extends WPanel {
 							public void draw(final WEvent ev, final Area pgp, final Point p, final float frame, final float opacity) {
 								final Area a = getGuiPosition(pgp);
 								texture().bindTexture(panel);
-								glColor4f(1, 1, 1, 1);
+								GlStateManager.color(1, 1, 1, 1);
 								RenderHelper.startTexture();
 								drawTexture(a);
 							}
@@ -191,7 +189,7 @@ public class GuiTask extends WPanel {
 							GlStateManager.pushMatrix();
 							GlStateManager.translate(a.x1(), a.y1(), 0f);
 							GlStateManager.scale(.5f, .5f, .5f);
-							glTranslatef(-a.x1(), -a.y1(), 0f);
+							GlStateManager.translate(-a.x1(), -a.y1(), 0f);
 							final String cont = "...";
 							final int contwidth = font().getStringWidth(cont);
 							final String name = TaskElement.this.state.getName();

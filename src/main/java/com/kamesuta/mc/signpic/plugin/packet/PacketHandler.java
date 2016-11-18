@@ -49,7 +49,7 @@ public class PacketHandler {
 		final SignPicturePacket packet = gson.fromJson(data, SignPicturePacket.class);
 		if (packet!=null) {
 			if (StringUtils.equals(packet.command, "open")) {
-				Client.mc.displayGuiScreen(new GuiManager(Client.mc.currentScreen, packet.token, packet.data));
+				Client.mc.displayGuiScreen(new GuiManager(packet.token, packet.data));
 			} else if (StringUtils.equals(packet.command, "data")) {
 				if (Client.mc.currentScreen instanceof GuiManager)
 					((GuiManager) Client.mc.currentScreen).data(packet.token, packet.data);

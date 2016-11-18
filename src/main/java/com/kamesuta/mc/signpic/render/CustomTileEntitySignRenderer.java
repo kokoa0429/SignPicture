@@ -1,8 +1,7 @@
 package com.kamesuta.mc.signpic.render;
 
-import static org.lwjgl.opengl.GL11.*;
-
 import com.kamesuta.mc.signpic.Client;
+import com.kamesuta.mc.signpic.Config;
 import com.kamesuta.mc.signpic.entry.Entry;
 import com.kamesuta.mc.signpic.entry.EntryId;
 import com.kamesuta.mc.signpic.entry.content.Content;
@@ -11,21 +10,21 @@ import com.kamesuta.mc.signpic.mode.CurrentMode;
 
 import net.minecraft.block.Block;
 import net.minecraft.client.renderer.GlStateManager;
-import net.minecraft.client.renderer.WorldRenderer;
+import net.minecraft.client.renderer.Tessellator;
 import net.minecraft.client.renderer.tileentity.TileEntitySignRenderer;
 import net.minecraft.init.Blocks;
 import net.minecraft.tileentity.TileEntitySign;
 import net.minecraft.util.ResourceLocation;
 
 public class CustomTileEntitySignRenderer extends TileEntitySignRenderer {
-	protected final WorldRenderer t = RenderHelper.w;
+	protected final Tessellator t = Tessellator.getInstance();
 
 	public static final ResourceLocation resError = new ResourceLocation("signpic", "textures/state/error.png");
 
 	public CustomTileEntitySignRenderer() {
 	}
 
-	public void renderSignPicture(final Entry entry, final int destroy, final float opacity) {
+	public void renderSignPicture(final Entry entry, final float opacity) {
 		// Load Image
 		final Content content = entry.content();
 
@@ -37,10 +36,8 @@ public class CustomTileEntitySignRenderer extends TileEntitySignRenderer {
 		GlStateManager.translate(entry.meta.offset.x, entry.meta.offset.y, entry.meta.offset.z);
 		entry.meta.rotation.rotate();
 
-		GlStateManager.translate(-size.width/2, size.height+((size.height>=0) ? 0 : -size.height)-.5f, 0f);
+		GlStateManager.translate(-size.width/2, size.height+(size.height>=0 ? 0 : -size.height)-.5f, 0f);
 		GlStateManager.scale(1f, -1f, 1f);
-		glTranslatef(-size.width/2, size.height+(size.height>=0 ? 0 : -size.height)-.5f, 0f);
-		glScalef(1f, -1f, 1f);
 
 		entry.gui.drawScreen(0, 0, 0, opacity, size.width, size.height);
 
@@ -79,7 +76,7 @@ public class CustomTileEntitySignRenderer extends TileEntitySignRenderer {
 		if (entry.isValid()) {
 			if (CurrentMode.instance.isState(CurrentMode.State.SEE)) {
 				RenderHelper.startTexture();
-				GlStateManager.color(1f, 1f, 1f, opacity*.5f);
+				GlStateManager.color(1f, 1f, 1f, opacity*Config.instance.renderSeeOpacity);
 				super.renderTileEntityAt(tile, x, y, z, partialTicks, destroy);
 			}
 
@@ -90,7 +87,7 @@ public class CustomTileEntitySignRenderer extends TileEntitySignRenderer {
 			GlStateManager.disableCull();
 			GlStateManager.disableLighting();
 
-			renderSignPicture(entry, destroy, opacity);
+			renderSignPicture(entry, opacity);
 
 			GlStateManager.enableLighting();
 			GlStateManager.enableCull();

@@ -89,10 +89,10 @@ public class OverlayFrame extends WFrame {
 			add(new WPanel(new R()) {
 				@Override
 				protected void initWidget() {
-			add(new GuiTask(new R(Coord.width(100), Coord.right(0), Coord.top(20), Coord.bottom(20))));
-		}
+					add(new GuiTask(new R(Coord.width(100), Coord.right(0), Coord.top(20), Coord.bottom(20))));
+				}
 
-		@Override
+				@Override
 				public void draw(final WEvent ev, final Area pgp, final Point p, final float frame, final float popacity) {
 					if (Config.instance.renderOverlayPanel||instance.isDelegated())
 						super.draw(ev, pgp, p, frame, popacity);

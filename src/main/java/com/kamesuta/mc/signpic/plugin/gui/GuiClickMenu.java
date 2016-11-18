@@ -204,7 +204,7 @@ public class GuiClickMenu extends WPanel {
 				texture().bindTexture(getIcon());
 				GlStateManager.color(1, 1, 1, 1);
 				RenderHelper.startTexture();
-				RenderHelper.drawRectTexture(GL_QUADS, a.x1()+.25f, a.y1()+.25f, a.x1()+14.75f, a.y2()-.25f, 0, 0, 1, 1);
+				drawTextureAbs(a.x1()+.25f, a.y1()+.25f, a.x1()+14.75f, a.y2()-.25f);
 				GlStateManager.popMatrix();
 			}
 			super.draw(ev, pgp, p, frame, popacity);

@@ -13,12 +13,12 @@ public class RenderHelper {
 
 	public static void drawLoadingCircle(final int msPerRoundInner, final int msPerRoundOuter) {
 		final long time = System.currentTimeMillis();
-		final float time1 = time % Math.abs(msPerRoundOuter) / (float)msPerRoundOuter;
+		final float time1 = time%Math.abs(msPerRoundOuter)/(float) msPerRoundOuter;
 		w.begin(GL_LINE_LOOP, DefaultVertexFormats.POSITION);
 		addCircleVertex(time1, time1+0.2f, 1.07f);
 		addCircleVertex(time1+0.2f, time1, 1.09f);
 		t.draw();
-		final float time2 = time % Math.abs(msPerRoundInner) / (float)msPerRoundInner;
+		final float time2 = time%Math.abs(msPerRoundInner)/(float) msPerRoundInner;
 		w.begin(GL_LINE_LOOP, DefaultVertexFormats.POSITION);
 		addCircleVertex(time2, time2+0.1f, 1.03f);
 		addCircleVertex(time2+0.1f, time2, 1.05f);
@@ -77,10 +77,10 @@ public class RenderHelper {
 	}
 
 	public static void addRectVertex(final float x1, final float y1, final float x2, final float y2) {
-		w.pos(x1, y1, 0).tex(0, 0).endVertex();
-		w.pos(x1, y2, 0).tex(0, 1).endVertex();
-		w.pos(x2, y2, 0).tex(1, 1).endVertex();
-		w.pos(x2, y1, 0).tex(1, 0).endVertex();
+		w.pos(x1, y2, 0).tex(0, 0).endVertex();
+		w.pos(x2, y2, 0).tex(0, 1).endVertex();
+		w.pos(x2, y1, 0).tex(1, 1).endVertex();
+		w.pos(x1, y1, 0).tex(1, 0).endVertex();
 	}
 
 	public static void drawRectTexture(final int mode) {
