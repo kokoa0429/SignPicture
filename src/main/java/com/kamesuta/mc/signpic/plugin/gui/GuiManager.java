@@ -138,6 +138,7 @@ public class GuiManager extends WFrame implements Controllable {
 		}
 	}
 
+	@Override
 	public boolean isActive() {
 		return Display.isActive()&&getContainer().size()<=1;
 	}
@@ -204,10 +205,19 @@ public class GuiManager extends WFrame implements Controllable {
 			return height()*(1f/(row+.3f));
 		}
 
-		int lastSelectCache = -1;
+		private int rowCache;
+		private int lastSelectCache = -1;
 
 		@Override
 		public void update(final WEvent ev, final Area pgp, final Point p) {
+			for (final Entry<Selectable, Boolean> line : GuiGallery.this.selectables.entrySet()) {
+				final Selectable label = line.getKey();
+				label.select(line.getValue());
+				if (label instanceof GuiGallaryLabel&&this.rowCache!=GuiManager.row)
+					((GuiGallaryLabel) label).setPosition(getNewLabelPosition(label, GuiManager.row));
+			}
+			this.rowCache = GuiManager.row;
+
 			if (this.areaSelect&&!isControllable()) {
 				this.selectArea = null;
 				this.startSelectPoint = null;
@@ -249,6 +259,11 @@ public class GuiManager extends WFrame implements Controllable {
 			super.update(ev, pgp, p);
 		}
 
+		public R getNewLabelPosition(final Selectable label, final int row) {
+			final int i = label.getNumber();
+			return new R(Coord.pleft((i%row)/(float) row), Coord.top((i/row)*((height()/row)+3)), Coord.pwidth(1f/(row+.3f)), Coord.height(getPanelHeight()));
+		}
+
 		@Override
 		public boolean mouseDragged(final WEvent ev, final Area pgp, final Point p, final int button, final long time) {
 			if (button<=1&&!GuiScreen.isCtrlKeyDown()&&!GuiScreen.isShiftKeyDown()&&!GuiGallery.this.mouseOver.isOpenMenu()&&this.startSelectPoint!=null)
@@ -258,11 +273,16 @@ public class GuiManager extends WFrame implements Controllable {
 
 		@Override
 		public boolean mouseClicked(final WEvent ev, final Area pgp, final Point p, final int button) {
-			if (button<=1) {
-				this.startSelectPoint = p;
-				this.selectAbsY = p.y()-this.offset.get();
+			if (!super.mouseClicked(ev, pgp, p, button)) {
+				selectAll(false);
+				return false;
+			} else {
+				if (button<=1) {
+					this.startSelectPoint = p;
+					this.selectAbsY = p.y()-this.offset.get();
+				}
+				return true;
 			}
-			return super.mouseClicked(ev, pgp, p, button);
 		}
 
 		@Override
@@ -419,28 +439,17 @@ public class GuiManager extends WFrame implements Controllable {
 		}
 
 		public class GalleryPanel extends WPanel {
+
 			public GalleryPanel(final R position) {
 				super(position);
 			}
 
-			int rowCache;
-
 			@Override
 			public void update(final WEvent ev, final Area pgp, final Point p) {
-				final Area a = getGuiPosition(pgp);
-
-				for (final Entry<Selectable, Boolean> line : GuiGallery.this.selectables.entrySet()) {
-					final Selectable label = line.getKey();
-					label.select(line.getValue());
-					if (label instanceof GuiGallaryLabel&&this.rowCache!=GuiManager.row)
-						((GuiGallaryLabel) label).setPosition(getNewLabelPosition(label, GuiManager.row));
-				}
-
 				int i;
-				while ((i = getContainer().size())<=Math.min(((a.h()-GuiGallery.this.offset.get())/(((i%GuiManager.row)/(float) GuiManager.row)*GuiManager.this.size))*GuiManager.row, GuiManager.this.size))
+				while ((i = getContainer().size())<=Math.min(((getGuiPosition(pgp).h()-GuiGallery.this.offset.get())/(((i%GuiManager.row)/(float) GuiManager.row)*GuiManager.this.size))*GuiManager.row, GuiManager.this.size))
 					add(i, GuiManager.row);
 
-				this.rowCache = GuiManager.row;
 				super.update(ev, pgp, p);
 			}
 
@@ -448,20 +457,6 @@ public class GuiManager extends WFrame implements Controllable {
 				final GuiGallaryLabel label = new GuiGallaryLabel(new R(Coord.pleft((i%row)/(float) row), Coord.top((i/row)*((height()/row)+3)), Coord.pwidth(1f/(row+.3f)), Coord.height(getPanelHeight())), i, GuiGallery.this, GuiManager.this);
 				add(label);
 				GuiGallery.this.selectables.put(label, false);
-			}
-
-			public R getNewLabelPosition(final Selectable label, final int row) {
-				final int i = label.getNumber();
-				return new R(Coord.pleft((i%row)/(float) row), Coord.top((i/row)*((height()/row)+3)), Coord.pwidth(1f/(row+.3f)), Coord.height(getPanelHeight()));
-			}
-
-			@Override
-			public boolean mouseClicked(final WEvent ev, final Area pgp, final Point p, final int button) {
-				if (!super.mouseClicked(ev, pgp, p, button)) {
-					selectAll(false);
-					return true;
-				} else
-					return false;
 			}
 
 			@Override
