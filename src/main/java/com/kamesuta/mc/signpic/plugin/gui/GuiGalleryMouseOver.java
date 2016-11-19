@@ -22,6 +22,7 @@ import net.minecraft.util.ResourceLocation;
 
 public class GuiGalleryMouseOver extends GuiMouseOver {
 	protected final String localizationOwner;
+	protected ISignPicData data;
 	protected String uri;
 	protected String world;
 	protected String owner;
@@ -31,9 +32,11 @@ public class GuiGalleryMouseOver extends GuiMouseOver {
 		this.localizationOwner = I18n.format("signpic.gui.manager.owner");
 	}
 
-	@Override
 	public void setSignPicData(final ISignPicData label) {
-		super.setSignPicData(label);
+		if (this.data==label||isOpenMenu())
+			return;
+		this.data = label;
+
 		if (this.data!=null) {
 			final SignData data = this.data.getData();
 			this.owner = this.localizationOwner+":"+data.owner_name;
@@ -47,6 +50,12 @@ public class GuiGalleryMouseOver extends GuiMouseOver {
 			else
 				this.uri = substringURI+"...";
 		}
+	}
+
+	@Override
+	public void setOpenMenuPoint(final Point p) {
+		if (this.data!=null&&!isOpenMenu())
+			this.openMenuPoint = p;
 	}
 
 	@Override
@@ -114,39 +123,41 @@ public class GuiGalleryMouseOver extends GuiMouseOver {
 
 	@Override
 	public void drawMouseOver(final WEvent ev, final Area pgp, final Point p, final float frame, final float popacity) {
-		final Area a = getGuiPosition(pgp);
-		final boolean longName = getStringWidth(this.owner)+getStringWidth(this.world)<115;
-		final float height = longName ? 25 : 35;
-		final float x1 = p.x()<a.x2()-140 ? p.x()+8 : p.x()-140;
-		final float y1 = p.y()>height ? p.y()-height : p.y();
-		final float x2 = p.x()+140<a.x2() ? p.x()+140 : p.x()-8;
-		final float y2 = p.y()>height ? p.y() : p.y()+height;
-		final Area overlay = new Area(x1, y1, x2, y2);
-		GlStateManager.color(0, 0, 0, 1);
-		RenderHelper.startShape();
-		draw(overlay);
-		glLineWidth(4f);
-		GlStateManager.color(.1f, 0, .2f, 1);
-		draw(overlay, GL_LINE_LOOP);
-		GlStateManager.pushMatrix();
-		GlStateManager.translate(overlay.minX()+overlay.w()/2, overlay.minY()+overlay.h()/2, 0);
-		RenderHelper.startTexture();
-		if (longName) {
-			fontColor(0xffffff);
-			drawString(this.owner, overlay.minX()-overlay.maxX()+70, overlay.minY()-overlay.maxY()+15, 0, 0, Align.LEFT, VerticalAlign.TOP, false);
-			fontColor(0xffffff);
-			drawString(this.world, overlay.minX()-overlay.maxX()+195, overlay.minY()-overlay.maxY()+15, 0, 0, Align.RIGHT, VerticalAlign.TOP, false);
-			fontColor(0xffffff);
-			drawString(this.uri, overlay.minX()-overlay.maxX()+70, overlay.minY()-overlay.maxY()+26, 0, 0, Align.LEFT, VerticalAlign.TOP, false);
-		} else {
-			fontColor(0xffffff);
-			drawString(this.owner, overlay.minX()-overlay.maxX()+70, overlay.minY()-overlay.maxY()+20, 0, 0, Align.LEFT, VerticalAlign.TOP, false);
-			fontColor(0xffffff);
-			drawString(this.world, overlay.minX()-overlay.maxX()+70, overlay.minY()-overlay.maxY()+31, 0, 0, Align.LEFT, VerticalAlign.TOP, false);
-			fontColor(0xffffff);
-			drawString(this.uri, overlay.minX()-overlay.maxX()+70, overlay.minY()-overlay.maxY()+42, 0, 0, Align.LEFT, VerticalAlign.TOP, false);
+		if (this.data!=null) {
+			final Area a = getGuiPosition(pgp);
+			final boolean longName = getStringWidth(this.owner)+getStringWidth(this.world)<115;
+			final float height = longName ? 25 : 35;
+			final float x1 = p.x()<a.x2()-140 ? p.x()+8 : p.x()-140;
+			final float y1 = p.y()>height ? p.y()-height : p.y();
+			final float x2 = p.x()+140<a.x2() ? p.x()+140 : p.x()-8;
+			final float y2 = p.y()>height ? p.y() : p.y()+height;
+			final Area overlay = new Area(x1, y1, x2, y2);
+			GlStateManager.color(0, 0, 0, 1);
+			RenderHelper.startShape();
+			draw(overlay);
+			glLineWidth(4f);
+			GlStateManager.color(.1f, 0, .2f, 1);
+			draw(overlay, GL_LINE_LOOP);
+			GlStateManager.pushMatrix();
+			GlStateManager.translate(overlay.minX()+overlay.w()/2, overlay.minY()+overlay.h()/2, 0);
+			RenderHelper.startTexture();
+			if (longName) {
+				fontColor(0xffffff);
+				drawString(this.owner, overlay.minX()-overlay.maxX()+70, overlay.minY()-overlay.maxY()+15, 0, 0, Align.LEFT, VerticalAlign.TOP, false);
+				fontColor(0xffffff);
+				drawString(this.world, overlay.minX()-overlay.maxX()+195, overlay.minY()-overlay.maxY()+15, 0, 0, Align.RIGHT, VerticalAlign.TOP, false);
+				fontColor(0xffffff);
+				drawString(this.uri, overlay.minX()-overlay.maxX()+70, overlay.minY()-overlay.maxY()+26, 0, 0, Align.LEFT, VerticalAlign.TOP, false);
+			} else {
+				fontColor(0xffffff);
+				drawString(this.owner, overlay.minX()-overlay.maxX()+70, overlay.minY()-overlay.maxY()+20, 0, 0, Align.LEFT, VerticalAlign.TOP, false);
+				fontColor(0xffffff);
+				drawString(this.world, overlay.minX()-overlay.maxX()+70, overlay.minY()-overlay.maxY()+31, 0, 0, Align.LEFT, VerticalAlign.TOP, false);
+				fontColor(0xffffff);
+				drawString(this.uri, overlay.minX()-overlay.maxX()+70, overlay.minY()-overlay.maxY()+42, 0, 0, Align.LEFT, VerticalAlign.TOP, false);
+			}
+			GlStateManager.popMatrix();
 		}
-		GlStateManager.popMatrix();
 	}
 
 	@Override
@@ -167,5 +178,12 @@ public class GuiGalleryMouseOver extends GuiMouseOver {
 			return true;
 		}
 		return false;
+	}
+
+	public interface ISignPicData {
+
+		public SignData getData();
+
+		public EntryId getEntryId();
 	}
 }

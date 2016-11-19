@@ -23,4 +23,6 @@ public interface ISelectManager {
 	public boolean getLabelsMouseInside();
 
 	public void setLabelsMouseInside(boolean b);
+
+	public boolean isActive();
 }

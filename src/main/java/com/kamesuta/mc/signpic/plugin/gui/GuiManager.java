@@ -8,7 +8,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.commons.lang3.math.NumberUtils;
+import org.lwjgl.LWJGLException;
 import org.lwjgl.input.Keyboard;
+import org.lwjgl.opengl.Display;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
@@ -176,6 +178,15 @@ public class GuiManager extends WFrame implements Controllable {
 			this.labelsMouseInside = b;
 		}
 
+		@Override
+		public boolean isActive() {
+			try {
+				return Display.isCurrent()&&GuiManager.this.getContainer().size()<1;
+			} catch (final LWJGLException e) {
+				return GuiManager.this.getContainer().size()<1;
+			}
+		}
+
 		private Area selectArea;
 		private Point startSelectPoint;
 		private float selectAbsY;
@@ -293,9 +304,8 @@ public class GuiManager extends WFrame implements Controllable {
 		public boolean mouseScrolled(final WEvent ev, final Area pgp, final Point p, final int scroll) {
 			if (GuiScreen.isCtrlKeyDown()) {
 				if (scroll<0) {
-					if (GuiManager.row<=10) {
+					if (GuiManager.row<=10)
 						GuiManager.row++;
-					}
 				} else if (GuiManager.row>3)
 					GuiManager.row--;
 				scroll(ev, pgp, p, 0, false);

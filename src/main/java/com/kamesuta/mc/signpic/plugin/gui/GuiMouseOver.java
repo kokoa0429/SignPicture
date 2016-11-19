@@ -8,7 +8,6 @@ import com.kamesuta.mc.bnnwidget.position.R;
 
 public abstract class GuiMouseOver extends WBox {
 	protected final Controllable frame;
-	protected ISignPicData data;
 	protected Point openMenuPoint;
 
 	public GuiMouseOver(final R position, final Controllable frame) {
@@ -16,15 +15,7 @@ public abstract class GuiMouseOver extends WBox {
 		this.frame = frame;
 	}
 
-	public void setSignPicData(final ISignPicData label) {
-		if (this.data==label||isOpenMenu())
-			return;
-		this.data = label;
-	}
-
 	public void setOpenMenuPoint(final Point p) {
-		if (this.data!=null&&!isOpenMenu())
-			this.openMenuPoint = p;
 	}
 
 	public boolean isOpenMenu() {
@@ -57,7 +48,7 @@ public abstract class GuiMouseOver extends WBox {
 
 	@Override
 	public void draw(final WEvent ev, final Area pgp, final Point p, final float frame, final float popacity) {
-		if (this.data!=null&&!isOpenMenu())
+		if (!isOpenMenu())
 			drawMouseOver(ev, pgp, p, frame, popacity);
 		super.draw(ev, pgp, p, frame, popacity);
 	}

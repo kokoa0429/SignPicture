@@ -9,6 +9,7 @@ import com.kamesuta.mc.bnnwidget.position.R;
 import com.kamesuta.mc.signpic.entry.EntryId;
 import com.kamesuta.mc.signpic.gui.SignPicLabel;
 import com.kamesuta.mc.signpic.plugin.SignData;
+import com.kamesuta.mc.signpic.plugin.gui.GuiGalleryMouseOver.ISignPicData;
 import com.kamesuta.mc.signpic.plugin.packet.PacketHandler;
 import com.kamesuta.mc.signpic.plugin.packet.PacketHandler.SignPicturePacket;
 import com.kamesuta.mc.signpic.render.RenderHelper;
@@ -18,7 +19,7 @@ import net.minecraft.client.renderer.GlStateManager;
 
 public class GuiGallaryLabel extends SignPicLabel implements Selectable, ISignPicData {
 	protected final IToOverlaySelectManager selectManager;
-	protected final GuiMouseOver mouseOver;
+	protected final GuiGalleryMouseOver mouseOver;
 	protected final GuiManager manager;
 	protected int i;
 	protected boolean select;
@@ -27,7 +28,7 @@ public class GuiGallaryLabel extends SignPicLabel implements Selectable, ISignPi
 		super(position);
 		this.i = i;
 		this.selectManager = selectManager;
-		this.mouseOver = this.selectManager.getMouseOver();
+		this.mouseOver = (GuiGalleryMouseOver) this.selectManager.getMouseOver();
 		this.manager = gui;
 	}
 
@@ -91,23 +92,24 @@ public class GuiGallaryLabel extends SignPicLabel implements Selectable, ISignPi
 		final Area a = getGuiPosition(pgp);
 		if (!pgp.areaOverlap(a))
 			return;
-		super.draw(ev, pgp, p, frame, opacity);
 		if (!isDefault()) {
 			if ((a.pointInside(p)&&!this.mouseOver.isOpenMenu())||this.select) {
-				//							if (GuiManager.this.getContainer().size()<=1)
-				//								glColor4f(.6f, .6f, .6f, .7f);
-				//							else
-				GlStateManager.color(.4f, .7f, 1, this.select ? .7f : .4f);
+				if (this.selectManager.isActive())
+					GlStateManager.color(.4f, .7f, 1, this.select ? .7f : .4f);
+				else
+					GlStateManager.color(.6f, .6f, .6f, .7f);
 				RenderHelper.startShape();
 				draw(a);
 			}
-			if ((this.select||this.selectManager.getLastSelect()==this.i)&&this.manager.getContainer().size()<=1) {
+			if ((this.select||this.selectManager.getLastSelect()==this.i)&&this.selectManager.isActive()) {
 				glLineWidth(1);
 				GlStateManager.color(.4f, .7f, 1, .8f);
 				RenderHelper.startShape();
 				draw(a, GL_LINE_LOOP);
 			}
 		}
+
+		super.draw(ev, pgp, p, frame, opacity);
 	}
 
 	@Override
