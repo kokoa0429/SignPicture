@@ -7,11 +7,11 @@ import com.kamesuta.mc.bnnwidget.position.Point;
 import com.kamesuta.mc.bnnwidget.position.R;
 
 public abstract class GuiMouseOver extends WBox {
-	protected final IControllable frame;
+	protected final Controllable frame;
 	protected ISignPicData data;
 	protected Point openMenuPoint;
 
-	public GuiMouseOver(final R position, final IControllable frame) {
+	public GuiMouseOver(final R position, final Controllable frame) {
 		super(position);
 		this.frame = frame;
 	}

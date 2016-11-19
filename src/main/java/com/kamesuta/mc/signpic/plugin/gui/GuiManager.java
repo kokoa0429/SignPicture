@@ -25,18 +25,15 @@ import com.kamesuta.mc.bnnwidget.position.R;
 import com.kamesuta.mc.bnnwidget.var.V;
 import com.kamesuta.mc.bnnwidget.var.VMotion;
 import com.kamesuta.mc.signpic.Reference;
-import com.kamesuta.mc.signpic.entry.EntryId;
-import com.kamesuta.mc.signpic.gui.SignPicLabel;
 import com.kamesuta.mc.signpic.plugin.SignData;
 import com.kamesuta.mc.signpic.plugin.packet.PacketHandler;
-import com.kamesuta.mc.signpic.plugin.packet.PacketHandler.SignPicturePacket;
 import com.kamesuta.mc.signpic.render.RenderHelper;
 
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
 
-public class GuiManager extends WFrame implements IControllable {
+public class GuiManager extends WFrame implements Controllable {
 	public static int row = 4;
 
 	public String key;
@@ -140,9 +137,10 @@ public class GuiManager extends WFrame implements IControllable {
 		}
 	}
 
-	public class GuiGallery extends WPanel {
+	public class GuiGallery extends WPanel implements IToOverlaySelectManager {
 		protected GalleryPanel panel;
-		protected GuiGalleryMouseOver overPanel;
+		protected GuiGalleryMouseOver mouseOver;
+		protected boolean labelsMouseInside;
 		protected VMotion offset;
 		protected int lastSelect = -1;
 
@@ -150,7 +148,32 @@ public class GuiManager extends WFrame implements IControllable {
 			super(position);
 			this.offset = V.am(0);
 			this.panel = new GalleryPanel(new R(Coord.left(0), Coord.top(this.offset), Coord.right(0), Coord.bottom(0)));
-			this.overPanel = new GuiGalleryMouseOver(new R(Coord.left(0), Coord.top(0), Coord.right(0), Coord.bottom(0)), GuiManager.this);
+			this.mouseOver = new GuiGalleryMouseOver(new R(Coord.left(0), Coord.top(0), Coord.right(0), Coord.bottom(0)), GuiManager.this);
+		}
+
+		@Override
+		public int getLastSelect() {
+			return this.lastSelect;
+		}
+
+		@Override
+		public void setLastSelect(final int i) {
+			this.lastSelect = i;
+		}
+
+		@Override
+		public GuiMouseOver getMouseOver() {
+			return this.mouseOver;
+		}
+
+		@Override
+		public boolean getLabelsMouseInside() {
+			return this.labelsMouseInside;
+		}
+
+		@Override
+		public void setLabelsMouseInside(final boolean b) {
+			this.labelsMouseInside = b;
 		}
 
 		private Area selectArea;
@@ -158,6 +181,7 @@ public class GuiManager extends WFrame implements IControllable {
 		private float selectAbsY;
 		private boolean areaSelect;
 
+		@Override
 		public Area getSelectArea() {
 			return this.selectArea;
 		}
@@ -207,12 +231,17 @@ public class GuiManager extends WFrame implements IControllable {
 				}
 			}
 			this.lastSelectCache = this.lastSelect;
+
+			if (!this.labelsMouseInside)
+				GuiGallery.this.mouseOver.setSignPicData(null);
+			this.labelsMouseInside = false;
+
 			super.update(ev, pgp, p);
 		}
 
 		@Override
 		public boolean mouseDragged(final WEvent ev, final Area pgp, final Point p, final int button, final long time) {
-			if (button<=1&&!GuiScreen.isCtrlKeyDown()&&!GuiScreen.isShiftKeyDown()&&!GuiGallery.this.overPanel.isOpenMenu()&&this.startSelectPoint!=null)
+			if (button<=1&&!GuiScreen.isCtrlKeyDown()&&!GuiScreen.isShiftKeyDown()&&!GuiGallery.this.mouseOver.isOpenMenu()&&this.startSelectPoint!=null)
 				this.areaSelect = true;
 			return super.mouseDragged(ev, pgp, p, button, time);
 		}
@@ -257,7 +286,7 @@ public class GuiManager extends WFrame implements IControllable {
 		@Override
 		protected void initWidget() {
 			add(this.panel);
-			add(this.overPanel);
+			add(this.mouseOver);
 		}
 
 		@Override
@@ -293,19 +322,25 @@ public class GuiManager extends WFrame implements IControllable {
 			}
 		}
 
-		protected Map<Selectable, Boolean> labels = Maps.newLinkedHashMap();
+		protected Map<Selectable, Boolean> selectables = Maps.newLinkedHashMap();
+
+		@Override
+		public Map<Selectable, Boolean> getSelectables() {
+			return this.selectables;
+		}
 
 		public List<Selectable> getSelectLabel() {
 			final List<Selectable> list = Lists.newLinkedList();
-			for (final Entry<Selectable, Boolean> line : this.labels.entrySet())
+			for (final Entry<Selectable, Boolean> line : this.selectables.entrySet())
 				if (line.getValue())
 					list.add(line.getKey());
 			return list;
 		}
 
+		@Override
 		public void select(final int number) {
 			int i = 0;
-			for (final Entry<Selectable, Boolean> line : this.labels.entrySet()) {
+			for (final Entry<Selectable, Boolean> line : this.selectables.entrySet()) {
 				if (i!=number)
 					line.setValue(false);
 				else
@@ -314,16 +349,18 @@ public class GuiManager extends WFrame implements IControllable {
 			}
 		}
 
+		@Override
 		public void selectAll(final boolean select) {
-			for (final Entry<Selectable, Boolean> line : this.labels.entrySet())
+			for (final Entry<Selectable, Boolean> line : this.selectables.entrySet())
 				line.setValue(select);
 		}
 
+		@Override
 		public void selectSoFar(final int number) {
 			final int selectFirst = Math.min(this.lastSelect, number);
 			final int selectEnd = Math.max(this.lastSelect, number);
 			int i = 0;
-			for (final Entry<Selectable, Boolean> line : this.labels.entrySet()) {
+			for (final Entry<Selectable, Boolean> line : this.selectables.entrySet()) {
 				if (i>=selectFirst&&selectEnd>=i)
 					line.setValue(true);
 				else
@@ -373,8 +410,6 @@ public class GuiManager extends WFrame implements IControllable {
 		}
 
 		public class GalleryPanel extends WPanel {
-			protected boolean labelsMouseInside;
-
 			public GalleryPanel(final R position) {
 				super(position);
 			}
@@ -385,11 +420,11 @@ public class GuiManager extends WFrame implements IControllable {
 			public void update(final WEvent ev, final Area pgp, final Point p) {
 				final Area a = getGuiPosition(pgp);
 
-				for (final Entry<Selectable, Boolean> line : GuiGallery.this.labels.entrySet()) {
+				for (final Entry<Selectable, Boolean> line : GuiGallery.this.selectables.entrySet()) {
 					final Selectable label = line.getKey();
 					label.select(line.getValue());
-					if (label instanceof GalleryLabel&&this.rowCache!=GuiManager.row)
-						((GalleryLabel) label).setPosition(getNewLabelPosition(label, GuiManager.row));
+					if (label instanceof GuiGallaryLabel&&this.rowCache!=GuiManager.row)
+						((GuiGallaryLabel) label).setPosition(getNewLabelPosition(label, GuiManager.row));
 				}
 
 				int i;
@@ -397,18 +432,13 @@ public class GuiManager extends WFrame implements IControllable {
 					add(i, GuiManager.row);
 
 				this.rowCache = GuiManager.row;
-
-				if (!this.labelsMouseInside)
-					GuiGallery.this.overPanel.setSignPicData(null);
-				this.labelsMouseInside = false;
-
 				super.update(ev, pgp, p);
 			}
 
 			public void add(final int i, final int row) {
-				final GalleryLabel label = new GalleryLabel(new R(Coord.pleft((i%row)/(float) row), Coord.top((i/row)*((height()/row)+3)), Coord.pwidth(1f/(row+.3f)), Coord.height(getPanelHeight())), i);
+				final GuiGallaryLabel label = new GuiGallaryLabel(new R(Coord.pleft((i%row)/(float) row), Coord.top((i/row)*((height()/row)+3)), Coord.pwidth(1f/(row+.3f)), Coord.height(getPanelHeight())), i, GuiGallery.this, GuiManager.this);
 				add(label);
-				GuiGallery.this.labels.put(label, false);
+				GuiGallery.this.selectables.put(label, false);
 			}
 
 			public R getNewLabelPosition(final Selectable label, final int row) {
@@ -430,124 +460,6 @@ public class GuiManager extends WFrame implements IControllable {
 				if (keycode==Keyboard.KEY_F5)
 					getContainer().clear();
 				return super.keyTyped(ev, pgp, p, c, keycode);
-			}
-
-			public class GalleryLabel extends SignPicLabel implements Selectable, ISignPicData {
-				private int i;
-				private boolean select;
-
-				public GalleryLabel(final R position, final int i) {
-					super(position);
-					this.i = i;
-				}
-
-				@Override
-				public void setNumber(final int i) {
-					this.i = i;
-				}
-
-				@Override
-				public int getNumber() {
-					return this.i;
-				}
-
-				@Override
-				public void select(final boolean select) {
-					this.select = select;
-				}
-
-				@Override
-				public boolean isSelect() {
-					return this.select;
-				}
-
-				public boolean isDefault() {
-					return this.i==0;
-				}
-
-				@Override
-				public SignData getData() {
-					return GuiManager.this.data.get(this.i-1);
-				}
-
-				@Override
-				public void onAdded() {
-					if (isDefault())
-						setEntryId(new EntryId("!signpic:textures/logo.png[]"));
-					PacketHandler.instance.sendPacket(new SignPicturePacket("data", GuiManager.this.key, Integer.toString(this.i)));
-				}
-
-				@Override
-				public void update(final WEvent ev, final Area pgp, final Point p) {
-					final Area a = getGuiPosition(pgp);
-					final SignData e = GuiManager.this.data.get(this.i-1);
-					if (this.entryId==null&&e!=null)
-						setEntryId(new EntryId(e.sign));
-
-					if (a.pointInside(p)) {
-						GalleryPanel.this.labelsMouseInside = true;
-						if (isDefault())
-							GuiGallery.this.overPanel.setSignPicData(null);
-						if (e!=null)
-							GuiGallery.this.overPanel.setSignPicData(this);
-					}
-
-					if (getSelectArea()!=null)
-						GuiGallery.this.labels.put(this, getSelectArea().areaOverlap(a));
-				}
-
-				@Override
-				public void draw(final WEvent ev, final Area pgp, final Point p, final float frame, final float opacity) {
-					final Area a = getGuiPosition(pgp);
-					if (!pgp.areaOverlap(a))
-						return;
-					super.draw(ev, pgp, p, frame, opacity);
-					if (!isDefault()) {
-						if ((a.pointInside(p)&&!GuiGallery.this.overPanel.isOpenMenu())||this.select) {
-							//							if (GuiManager.this.getContainer().size()<=1)
-							//								glColor4f(.6f, .6f, .6f, .7f);
-							//							else
-							GlStateManager.color(.4f, .7f, 1, this.select ? .7f : .4f);
-							RenderHelper.startShape();
-							draw(a);
-						}
-						if ((this.select||GuiGallery.this.lastSelect==this.i)&&GuiManager.this.getContainer().size()<=1) {
-							glLineWidth(1);
-							GlStateManager.color(.4f, .7f, 1, .8f);
-							RenderHelper.startShape();
-							draw(a, GL_LINE_LOOP);
-						}
-					}
-				}
-
-				@Override
-				public boolean mouseClicked(final WEvent ev, final Area pgp, final Point p, final int button) {
-					final Area a = getGuiPosition(pgp);
-					if (a.pointInside(p)) {
-						if (button<=1&&!GuiGallery.this.overPanel.isOpenMenu()) {
-							if (!this.select) {
-								if (!GuiScreen.isShiftKeyDown()) {
-									if (!GuiScreen.isCtrlKeyDown())
-										selectAll(false);
-								} else
-									selectSoFar(this.i);
-								if (!isDefault()) {
-									GuiGallery.this.labels.put(this, true);
-									GuiGallery.this.lastSelect = this.i;
-								}
-							} else {
-								if (!GuiScreen.isCtrlKeyDown()) {
-									GuiGallery.this.select(this.i);
-									GuiGallery.this.lastSelect = this.i;
-								} else
-									GuiGallery.this.labels.put(this, false);
-							}
-						}
-						if (button==1)
-							GuiGallery.this.overPanel.setOpenMenuPoint(p);
-					}
-					return super.mouseClicked(ev, pgp, p, button)||a.pointInside(p);
-				}
 			}
 		}
 	}

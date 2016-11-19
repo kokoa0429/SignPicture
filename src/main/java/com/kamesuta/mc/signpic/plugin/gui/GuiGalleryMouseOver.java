@@ -26,7 +26,7 @@ public class GuiGalleryMouseOver extends GuiMouseOver {
 	protected String world;
 	protected String owner;
 
-	public GuiGalleryMouseOver(final R position, final IControllable frame) {
+	public GuiGalleryMouseOver(final R position, final Controllable frame) {
 		super(position, frame);
 		this.localizationOwner = I18n.format("signpic.gui.manager.owner");
 	}

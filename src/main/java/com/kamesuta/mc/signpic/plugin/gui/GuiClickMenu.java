@@ -18,12 +18,12 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.ResourceLocation;
 
 public class GuiClickMenu extends WPanel {
-	protected IKeyControllable controllable;
+	protected KeyControllable controllable;
 	protected int select = -1;
 	protected int mouseOver = -1;
 	protected boolean keySelect;
 
-	public GuiClickMenu(final R position, final IKeyControllable controllable) {
+	public GuiClickMenu(final R position, final KeyControllable controllable) {
 		super(position);
 		this.controllable = controllable;
 	}
