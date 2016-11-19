@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.commons.lang3.math.NumberUtils;
-import org.lwjgl.LWJGLException;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.opengl.Display;
 
@@ -64,7 +63,7 @@ public class GuiManager extends WFrame implements Controllable {
 
 	@Override
 	protected void initWidget() {
-		add(new GuiGallery(R.diff(0, 0, 0, 0)));
+		add(new GuiGallery(new R()));
 		super.initWidget();
 	}
 
@@ -139,6 +138,10 @@ public class GuiManager extends WFrame implements Controllable {
 		}
 	}
 
+	public boolean isActive() {
+		return Display.isActive()&&getContainer().size()<=1;
+	}
+
 	public class GuiGallery extends WPanel implements IToOverlaySelectManager {
 		protected GalleryPanel panel;
 		protected GuiGalleryMouseOver mouseOver;
@@ -150,7 +153,7 @@ public class GuiManager extends WFrame implements Controllable {
 			super(position);
 			this.offset = V.am(0);
 			this.panel = new GalleryPanel(new R(Coord.left(0), Coord.top(this.offset), Coord.right(0), Coord.bottom(0)));
-			this.mouseOver = new GuiGalleryMouseOver(new R(Coord.left(0), Coord.top(0), Coord.right(0), Coord.bottom(0)), GuiManager.this);
+			this.mouseOver = new GuiGalleryMouseOver(new R(), GuiManager.this);
 		}
 
 		@Override
@@ -180,11 +183,7 @@ public class GuiManager extends WFrame implements Controllable {
 
 		@Override
 		public boolean isActive() {
-			try {
-				return Display.isCurrent()&&GuiManager.this.getContainer().size()<1;
-			} catch (final LWJGLException e) {
-				return GuiManager.this.getContainer().size()<1;
-			}
+			return GuiManager.this.isActive();
 		}
 
 		private Area selectArea;

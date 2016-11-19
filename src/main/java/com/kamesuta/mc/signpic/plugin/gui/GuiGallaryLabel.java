@@ -2,6 +2,8 @@ package com.kamesuta.mc.signpic.plugin.gui;
 
 import static org.lwjgl.opengl.GL11.*;
 
+import org.lwjgl.input.Mouse;
+
 import com.kamesuta.mc.bnnwidget.WEvent;
 import com.kamesuta.mc.bnnwidget.position.Area;
 import com.kamesuta.mc.bnnwidget.position.Point;
@@ -92,14 +94,18 @@ public class GuiGallaryLabel extends SignPicLabel implements Selectable, ISignPi
 		final Area a = getGuiPosition(pgp);
 		if (!pgp.areaOverlap(a))
 			return;
+		super.draw(ev, pgp, p, frame, opacity);
+
 		if (!isDefault()) {
-			if ((a.pointInside(p)&&!this.mouseOver.isOpenMenu())||this.select) {
-				if (this.selectManager.isActive())
-					GlStateManager.color(.4f, .7f, 1, this.select ? .7f : .4f);
-				else
-					GlStateManager.color(.6f, .6f, .6f, .7f);
-				RenderHelper.startShape();
-				draw(a);
+			if (this.select||Mouse.isInsideWindow()) {
+				if ((a.pointInside(p)&&!this.mouseOver.isOpenMenu())||this.select) {
+					if (this.selectManager.isActive())
+						GlStateManager.color(.4f, .7f, 1, this.select ? .6f : .4f);
+					else
+						GlStateManager.color(.5f, .5f, .5f, .7f);
+					RenderHelper.startShape();
+					draw(a);
+				}
 			}
 			if ((this.select||this.selectManager.getLastSelect()==this.i)&&this.selectManager.isActive()) {
 				glLineWidth(1);
@@ -108,8 +114,6 @@ public class GuiGallaryLabel extends SignPicLabel implements Selectable, ISignPi
 				draw(a, GL_LINE_LOOP);
 			}
 		}
-
-		super.draw(ev, pgp, p, frame, opacity);
 	}
 
 	@Override

@@ -2,6 +2,8 @@ package com.kamesuta.mc.signpic.plugin.gui;
 
 import static org.lwjgl.opengl.GL11.*;
 
+import org.lwjgl.input.Mouse;
+
 import com.kamesuta.mc.bnnwidget.WBase;
 import com.kamesuta.mc.bnnwidget.WEvent;
 import com.kamesuta.mc.bnnwidget.position.Area;
@@ -53,19 +55,22 @@ public class GuiSelectLabel extends WBase implements Selectable {
 		final Area a = getGuiPosition(pgp);
 		if (!pgp.areaOverlap(a))
 			return;
+		super.draw(ev, pgp, p, frame, popacity);
 
 		if (a.pointInside(p)||this.select) {
 			if (this.selectManager instanceof IToOverlaySelectManager)
 				if (((IToOverlaySelectManager) this.selectManager).getMouseOver().isOpenMenu()) {
-					if (this.selectManager.isActive())
-						GlStateManager.color(.4f, .7f, 1, this.select ? .7f : .4f);
-					else
-						GlStateManager.color(.6f, .6f, .6f, .7f);
-					RenderHelper.startShape();
-					draw(a);
+					if (this.select||Mouse.isInsideWindow()) {
+						if (this.selectManager.isActive())
+							GlStateManager.color(.4f, .7f, 1, this.select ? .6f : .4f);
+						else
+							GlStateManager.color(.6f, .6f, .6f, .7f);
+						RenderHelper.startShape();
+						draw(a);
+					}
 				} else {
-					if (this.selectManager.isActive())
-						GlStateManager.color(.4f, .7f, 1, this.select ? .7f : .4f);
+					if (this.selectManager.isActive()||a.pointInside(p))
+						GlStateManager.color(.4f, .7f, 1, this.select ? .6f : .4f);
 					else
 						GlStateManager.color(.6f, .6f, .6f, .7f);
 					RenderHelper.startShape();
@@ -86,7 +91,5 @@ public class GuiSelectLabel extends WBase implements Selectable {
 			drawTexture(a);
 			GlStateManager.popMatrix();
 		}
-
-		super.draw(ev, pgp, p, frame, popacity);
 	}
 }

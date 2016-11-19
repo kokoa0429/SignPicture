@@ -8,4 +8,6 @@ public interface KeyControllable {
 
 	boolean isKeyControllable();
 
+	boolean isActive();
+
 }

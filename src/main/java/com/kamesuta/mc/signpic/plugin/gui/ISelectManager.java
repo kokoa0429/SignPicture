@@ -6,23 +6,23 @@ import com.kamesuta.mc.bnnwidget.position.Area;
 
 public interface ISelectManager {
 
-	public void select(int i);
+	void select(int i);
 
-	public void selectAll(boolean b);
+	void selectAll(boolean b);
 
-	public void selectSoFar(int i);
+	void selectSoFar(int i);
 
-	public int getLastSelect();
+	int getLastSelect();
 
-	public void setLastSelect(int i);
+	void setLastSelect(int i);
 
-	public Map<Selectable, Boolean> getSelectables();
+	Map<Selectable, Boolean> getSelectables();
 
-	public Area getSelectArea();
+	Area getSelectArea();
 
-	public boolean getLabelsMouseInside();
+	boolean getLabelsMouseInside();
 
-	public void setLabelsMouseInside(boolean b);
+	void setLabelsMouseInside(boolean b);
 
-	public boolean isActive();
+	boolean isActive();
 }

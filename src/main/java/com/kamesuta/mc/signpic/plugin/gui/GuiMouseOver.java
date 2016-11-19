@@ -1,5 +1,7 @@
 package com.kamesuta.mc.signpic.plugin.gui;
 
+import org.lwjgl.input.Mouse;
+
 import com.kamesuta.mc.bnnwidget.WBox;
 import com.kamesuta.mc.bnnwidget.WEvent;
 import com.kamesuta.mc.bnnwidget.position.Area;
@@ -48,7 +50,7 @@ public abstract class GuiMouseOver extends WBox {
 
 	@Override
 	public void draw(final WEvent ev, final Area pgp, final Point p, final float frame, final float popacity) {
-		if (!isOpenMenu())
+		if (!isOpenMenu()&&this.frame.isActive()&&Mouse.isInsideWindow())
 			drawMouseOver(ev, pgp, p, frame, popacity);
 		super.draw(ev, pgp, p, frame, popacity);
 	}
