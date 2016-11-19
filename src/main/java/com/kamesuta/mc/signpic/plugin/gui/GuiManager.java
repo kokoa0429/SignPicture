@@ -142,7 +142,7 @@ public class GuiManager extends WFrame implements IControllable {
 
 	public class GuiGallery extends WPanel {
 		protected GalleryPanel panel;
-		protected GuiMouseOver overPanel;
+		protected GuiGalleryMouseOver overPanel;
 		protected VMotion offset;
 		protected int lastSelect = -1;
 
@@ -150,7 +150,7 @@ public class GuiManager extends WFrame implements IControllable {
 			super(position);
 			this.offset = V.am(0);
 			this.panel = new GalleryPanel(new R(Coord.left(0), Coord.top(this.offset), Coord.right(0), Coord.bottom(0)));
-			this.overPanel = new GuiMouseOver(new R(Coord.left(0), Coord.top(0), Coord.right(0), Coord.bottom(0)), GuiManager.this);
+			this.overPanel = new GuiGalleryMouseOver(new R(Coord.left(0), Coord.top(0), Coord.right(0), Coord.bottom(0)), GuiManager.this);
 		}
 
 		private Area selectArea;
@@ -399,7 +399,7 @@ public class GuiManager extends WFrame implements IControllable {
 				this.rowCache = GuiManager.row;
 
 				if (!this.labelsMouseInside)
-					GuiGallery.this.overPanel.setLabel(null);
+					GuiGallery.this.overPanel.setSignPicData(null);
 				this.labelsMouseInside = false;
 
 				super.update(ev, pgp, p);
@@ -432,7 +432,7 @@ public class GuiManager extends WFrame implements IControllable {
 				return super.keyTyped(ev, pgp, p, c, keycode);
 			}
 
-			public class GalleryLabel extends SignPicLabel implements Selectable {
+			public class GalleryLabel extends SignPicLabel implements Selectable, ISignPicData {
 				private int i;
 				private boolean select;
 
@@ -465,6 +465,7 @@ public class GuiManager extends WFrame implements IControllable {
 					return this.i==0;
 				}
 
+				@Override
 				public SignData getData() {
 					return GuiManager.this.data.get(this.i-1);
 				}
@@ -486,9 +487,9 @@ public class GuiManager extends WFrame implements IControllable {
 					if (a.pointInside(p)) {
 						GalleryPanel.this.labelsMouseInside = true;
 						if (isDefault())
-							GuiGallery.this.overPanel.setLabel(null);
+							GuiGallery.this.overPanel.setSignPicData(null);
 						if (e!=null)
-							GuiGallery.this.overPanel.setLabel(this);
+							GuiGallery.this.overPanel.setSignPicData(this);
 					}
 
 					if (getSelectArea()!=null)
@@ -543,7 +544,7 @@ public class GuiManager extends WFrame implements IControllable {
 							}
 						}
 						if (button==1)
-							GuiGallery.this.overPanel.openMenu(p);
+							GuiGallery.this.overPanel.setOpenMenuPoint(p);
 					}
 					return super.mouseClicked(ev, pgp, p, button)||a.pointInside(p);
 				}
