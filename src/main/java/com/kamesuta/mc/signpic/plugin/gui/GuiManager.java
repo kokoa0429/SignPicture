@@ -150,7 +150,7 @@ public class GuiManager extends WFrame implements IControllable {
 			super(position);
 			this.offset = V.am(0);
 			this.panel = new GalleryPanel(new R(Coord.left(0), Coord.top(this.offset), Coord.right(0), Coord.bottom(0)));
-			this.overPanel = new GuiMouseOver(new R(Coord.left(0), Coord.top(0), Coord.right(0), Coord.bottom(0)));
+			this.overPanel = new GuiMouseOver(new R(Coord.left(0), Coord.top(0), Coord.right(0), Coord.bottom(0)), GuiManager.this);
 		}
 
 		private Area selectArea;
@@ -523,7 +523,7 @@ public class GuiManager extends WFrame implements IControllable {
 				public boolean mouseClicked(final WEvent ev, final Area pgp, final Point p, final int button) {
 					final Area a = getGuiPosition(pgp);
 					if (a.pointInside(p)) {
-						if (button<=1) {
+						if (button<=1&&!GuiGallery.this.overPanel.isOpenMenu()) {
 							if (!this.select) {
 								if (!GuiScreen.isShiftKeyDown()) {
 									if (!GuiScreen.isCtrlKeyDown())

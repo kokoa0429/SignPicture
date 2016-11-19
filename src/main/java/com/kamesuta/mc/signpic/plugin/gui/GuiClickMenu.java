@@ -18,15 +18,13 @@ import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.util.ResourceLocation;
 
 public class GuiClickMenu extends WPanel {
-	protected WPanel panel;
 	protected IKeyControllable controllable;
 	protected int select = -1;
 	protected int mouseOver = -1;
 	protected boolean keySelect;
 
-	public GuiClickMenu(final R position, final WPanel panel, final IKeyControllable controllable) {
+	public GuiClickMenu(final R position, final IKeyControllable controllable) {
 		super(position);
-		this.panel = panel;
 		this.controllable = controllable;
 	}
 
@@ -99,16 +97,16 @@ public class GuiClickMenu extends WPanel {
 
 	@Override
 	public boolean mouseClicked(final WEvent ev, final Area pgp, final Point p, final int button) {
-		final Area a = getGuiPosition(pgp);
-		if (!a.pointInside(p))
-			close();
-		return super.mouseClicked(ev, pgp, p, button);
+		if (super.mouseClicked(ev, pgp, p, button))
+			return true;
+		else
+			return !getGuiPosition(pgp).pointInside(p);
 	}
 
 	@Override
 	public boolean keyTyped(final WEvent ev, final Area pgp, final Point p, final char c, final int keycode) {
 		if (keycode==Keyboard.KEY_ESCAPE)
-			close();
+			return true;
 		else if (keycode==Keyboard.KEY_DOWN) {
 			if (this.select!=getContainer().size()-1)
 				this.select++;
@@ -123,11 +121,6 @@ public class GuiClickMenu extends WPanel {
 			this.keySelect = true;
 		}
 		return super.keyTyped(ev, pgp, p, c, keycode);
-	}
-
-	public void close() {
-		this.controllable.setKeyControllable(null);
-		this.panel.remove(this);
 	}
 
 	public class ClickMenuPanel extends WBase {
@@ -214,8 +207,7 @@ public class GuiClickMenu extends WPanel {
 		public boolean mouseClicked(final WEvent ev, final Area pgp, final Point p, final int button) {
 			if (getGuiPosition(pgp).pointInside(p)&&isAvailable()) {
 				if (onEnter(ev, pgp, p))
-					close();
-				return true;
+					return true;
 			}
 			return super.mouseClicked(ev, pgp, p, button);
 		}
@@ -224,7 +216,7 @@ public class GuiClickMenu extends WPanel {
 		public boolean keyTyped(final WEvent ev, final Area pgp, final Point p, final char c, final int keycode) {
 			if (this.select&&keycode==Keyboard.KEY_RETURN&&isAvailable())
 				if (onEnter(ev, pgp, p))
-					close();
+					return true;
 			return super.keyTyped(ev, pgp, p, c, keycode);
 		}
 
