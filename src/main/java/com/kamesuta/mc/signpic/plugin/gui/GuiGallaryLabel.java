@@ -54,33 +54,25 @@ public class GuiGallaryLabel extends SignPicLabel implements Selectable, ISignPi
 		return this.select;
 	}
 
-	public boolean isDefault() {
-		return this.i==0;
-	}
-
 	@Override
 	public SignData getData() {
-		return this.manager.data.get(this.i-1);
+		return this.manager.data.get(this.i);
 	}
 
 	@Override
 	public void onAdded() {
-		if (isDefault())
-			setEntryId(new EntryId("!signpic:textures/logo.png[]"));
 		PacketHandler.instance.sendPacket(new SignPicturePacket("data", this.manager.key, Integer.toString(this.i)));
 	}
 
 	@Override
 	public void update(final WEvent ev, final Area pgp, final Point p) {
 		final Area a = getGuiPosition(pgp);
-		final SignData e = this.manager.data.get(this.i-1);
+		final SignData e = this.manager.data.get(this.i);
 		if (this.entryId==null&&e!=null)
 			setEntryId(new EntryId(e.sign));
 
 		if (a.pointInside(p)) {
 			this.selectManager.setLabelsMouseInside(true);
-			if (isDefault())
-				this.mouseOver.setSignPicData(null);
 			if (e!=null)
 				this.mouseOver.setSignPicData(this);
 		}
@@ -95,25 +87,23 @@ public class GuiGallaryLabel extends SignPicLabel implements Selectable, ISignPi
 		if (!pgp.areaOverlap(a))
 			return;
 		super.draw(ev, pgp, p, frame, opacity);
-
-		if (!isDefault()) {
-			if (this.select||Mouse.isInsideWindow()) {
-				if ((a.pointInside(p)&&!this.mouseOver.isOpenMenu())||this.select) {
-					if (this.selectManager.isActive())
-						GlStateManager.color(.4f, .7f, 1, this.select ? .6f : .4f);
-					else
-						GlStateManager.color(.5f, .5f, .5f, .7f);
-					RenderHelper.startShape();
-					draw(a);
-				}
-			}
-			if ((this.select||this.selectManager.getLastSelect()==this.i)&&this.selectManager.isActive()) {
-				glLineWidth(1);
-				GlStateManager.color(.4f, .7f, 1, .8f);
+		if (this.select||Mouse.isInsideWindow()) {
+			if ((a.pointInside(p)&&!this.mouseOver.isOpenMenu())||this.select) {
+				if (this.selectManager.isActive())
+					GlStateManager.color(.4f, .7f, 1, this.select ? .6f : .4f);
+				else
+					GlStateManager.color(.5f, .5f, .5f, .7f);
 				RenderHelper.startShape();
-				draw(a, GL_LINE_LOOP);
+				draw(a);
 			}
 		}
+		if ((this.select||this.selectManager.getLastSelect()==this.i)&&this.selectManager.isActive()) {
+			glLineWidth(1);
+			GlStateManager.color(.4f, .7f, 1, .8f);
+			RenderHelper.startShape();
+			draw(a, GL_LINE_LOOP);
+		}
+
 	}
 
 	@Override
@@ -127,10 +117,8 @@ public class GuiGallaryLabel extends SignPicLabel implements Selectable, ISignPi
 							this.selectManager.selectAll(false);
 					} else
 						this.selectManager.selectSoFar(this.i);
-					if (!isDefault()) {
-						this.selectManager.getSelectables().put(this, true);
-						this.selectManager.setLastSelect(this.i);
-					}
+					this.selectManager.getSelectables().put(this, true);
+					this.selectManager.setLastSelect(this.i);
 				} else {
 					if (!GuiScreen.isCtrlKeyDown()) {
 						this.selectManager.select(this.i);

@@ -17,6 +17,7 @@ import com.kamesuta.mc.bnnwidget.WCommon;
 import com.kamesuta.mc.bnnwidget.WEvent;
 import com.kamesuta.mc.bnnwidget.WFrame;
 import com.kamesuta.mc.bnnwidget.WPanel;
+import com.kamesuta.mc.bnnwidget.component.MLabel;
 import com.kamesuta.mc.bnnwidget.motion.Easings;
 import com.kamesuta.mc.bnnwidget.motion.Motion;
 import com.kamesuta.mc.bnnwidget.position.Area;
@@ -33,6 +34,7 @@ import com.kamesuta.mc.signpic.render.RenderHelper;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.renderer.GlStateManager;
 import net.minecraft.client.renderer.vertex.DefaultVertexFormats;
+import net.minecraft.client.resources.I18n;
 
 public class GuiManager extends WFrame implements Controllable {
 	public static int row = 4;
@@ -187,6 +189,12 @@ public class GuiManager extends WFrame implements Controllable {
 			return GuiManager.this.isActive();
 		}
 
+		@Override
+		protected void initWidget() {
+			add(this.panel);
+			add(this.mouseOver);
+		}
+
 		private Area selectArea;
 		private Point startSelectPoint;
 		private float selectAbsY;
@@ -273,16 +281,15 @@ public class GuiManager extends WFrame implements Controllable {
 
 		@Override
 		public boolean mouseClicked(final WEvent ev, final Area pgp, final Point p, final int button) {
+			if (button<=1) {
+				this.startSelectPoint = p;
+				this.selectAbsY = p.y()-this.offset.get();
+			}
 			if (!super.mouseClicked(ev, pgp, p, button)) {
 				selectAll(false);
 				return false;
-			} else {
-				if (button<=1) {
-					this.startSelectPoint = p;
-					this.selectAbsY = p.y()-this.offset.get();
-				}
+			} else
 				return true;
-			}
 		}
 
 		@Override
@@ -311,12 +318,6 @@ public class GuiManager extends WFrame implements Controllable {
 				GlStateManager.color(.2f, .3f, 1, .6f);
 				draw(this.selectArea, GL_LINE_LOOP);
 			}
-		}
-
-		@Override
-		protected void initWidget() {
-			add(this.panel);
-			add(this.mouseOver);
 		}
 
 		@Override
@@ -445,9 +446,21 @@ public class GuiManager extends WFrame implements Controllable {
 			}
 
 			@Override
+			protected void initWidget() {
+				super.initWidget();
+				if (GuiManager.this.size<=0)
+					add(new MLabel(new R(Coord.pleft(.5f), Coord.ptop(.5f), Coord.width(100), Coord.height(25)).child(Coord.pleft(-.5f), Coord.ptop(-.5f))) {
+						{
+							setText(I18n.format("signpic.gui.manager.empty"));
+							setColor(0xaaaaaa);
+						}
+					});
+			}
+
+			@Override
 			public void update(final WEvent ev, final Area pgp, final Point p) {
 				int i;
-				while ((i = getContainer().size())<=Math.min(((getGuiPosition(pgp).h()-GuiGallery.this.offset.get())/(((i%GuiManager.row)/(float) GuiManager.row)*GuiManager.this.size))*GuiManager.row, GuiManager.this.size))
+				while ((i = getContainer().size())<=Math.min(((getGuiPosition(pgp).h()-GuiGallery.this.offset.get())/(((i%GuiManager.row)/(float) GuiManager.row)*GuiManager.this.size))*GuiManager.row, GuiManager.this.size-1))
 					add(i, GuiManager.row);
 
 				super.update(ev, pgp, p);

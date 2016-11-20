@@ -41,8 +41,10 @@ signpic.gui.paas.time=Esc でキャンセル ( %s / %s 秒 )
 signpic.gui.manager.owner=所有者
 signpic.gui.manager.open=開く
 signpic.gui.manager.openbrowzer=ブラウザで開く
+signpic.gui.manager.empty=表示できるものはありません。
 ## Notice
 signpic.gui.editor.notice.toolong=コードが長すぎて看板に収まりません！
+signpic.gui.notice.openblowzerfaild=ブラウザを開けませんでした: §7%s
 
 # Notice
 signpic.gui.notice.uploading=アップロード開始 %s
@@ -51,7 +53,6 @@ signpic.gui.notice.uploadfailed=アップロード失敗: §7%s
 signpic.gui.notice.downloading=ダウンロード開始 %s
 signpic.gui.notice.downloaded=ダウンロード完了 %s
 signpic.gui.notice.downloadfailed=ダウンロード失敗: §7%s
-signpic.gui.notice.openblowzerfaild=ブラウザを開けませんでした: §7%s
 signpic.gui.notice.versioning.downloadedAlready=古いバージョンのファイルを消して再起動してください
 signpic.gui.notice.versioning.downloadingAlready=最新版は既にダウンロード中です！
 

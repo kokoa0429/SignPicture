@@ -76,8 +76,10 @@ signpic.gui.paas.time=Esc for Cancel ( %.2f / %.2f seconds )
 signpic.gui.manager.owner=Owner
 signpic.gui.manager.open=Open
 signpic.gui.manager.openbrowzer=Open With Browzer
+signpic.gui.manager.empty=There is nothing to display.
 ## Notice
 signpic.gui.editor.notice.toolong=Too long code for Sign!
+signpic.gui.manager.openblowzerfaild=Couldn't open browzer: §7%s
 
 # Notice
 signpic.gui.notice.uploading=Uploading %s
@@ -86,7 +88,6 @@ signpic.gui.notice.uploadfailed=Upload Failed: §7%s
 signpic.gui.notice.downloading=Downloading %s
 signpic.gui.notice.downloaded=Finished downloading %s
 signpic.gui.notice.downloadfailed=Download Failed: §7%s
-signpic.gui.notice.openblowzerfaild=Couldn't open browzer: §7%s
 signpic.gui.notice.versioning.downloadedAlready=Close your game, delete the old version and load it again to update!
 signpic.gui.notice.versioning.downloadingAlready=The update is already downloading!
 
