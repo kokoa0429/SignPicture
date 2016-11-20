@@ -8,6 +8,7 @@ import com.kamesuta.mc.bnnwidget.WEvent;
 import com.kamesuta.mc.bnnwidget.position.Area;
 import com.kamesuta.mc.bnnwidget.position.Point;
 import com.kamesuta.mc.bnnwidget.position.R;
+import com.kamesuta.mc.signpic.Reference;
 import com.kamesuta.mc.signpic.entry.EntryId;
 import com.kamesuta.mc.signpic.gui.SignPicLabel;
 import com.kamesuta.mc.signpic.plugin.SignData;
@@ -84,8 +85,11 @@ public class GuiGallaryLabel extends SignPicLabel implements Selectable, ISignPi
 	@Override
 	public void draw(final WEvent ev, final Area pgp, final Point p, final float frame, final float opacity) {
 		final Area a = getGuiPosition(pgp);
-		if (!pgp.areaOverlap(a))
+		if (!pgp.areaOverlap(a)) {
+			if (this.i==0)
+				Reference.logger.info("undraw!");
 			return;
+		}
 		super.draw(ev, pgp, p, frame, opacity);
 		if (this.select||Mouse.isInsideWindow()) {
 			if ((a.pointInside(p)&&!this.mouseOver.isOpenMenu())||this.select) {

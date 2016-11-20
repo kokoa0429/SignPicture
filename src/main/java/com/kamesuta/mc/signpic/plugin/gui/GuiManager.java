@@ -235,7 +235,7 @@ public class GuiManager extends WFrame implements Controllable {
 				this.selectArea = new Area(this.startSelectPoint.x(), this.selectAbsY+this.offset.get(), p.x(), p.y());
 				if (height()-3<=p.y())
 					scroll(ev, pgp, p, -50);
-				if (p.y()<=3)
+				else if (p.y()<=3)
 					scroll(ev, pgp, p, 50);
 			}
 
@@ -324,7 +324,7 @@ public class GuiManager extends WFrame implements Controllable {
 		public boolean mouseScrolled(final WEvent ev, final Area pgp, final Point p, final int scroll) {
 			if (GuiScreen.isCtrlKeyDown()) {
 				if (scroll<0) {
-					if (GuiManager.row<=10)
+					if (GuiManager.row<10)
 						GuiManager.row++;
 				} else if (GuiManager.row>3)
 					GuiManager.row--;
