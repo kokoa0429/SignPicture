@@ -149,13 +149,15 @@ public class GuiManager extends WFrame implements Controllable {
 		protected GalleryPanel panel;
 		protected GuiGalleryMouseOver mouseOver;
 		protected boolean labelsMouseInside;
-		protected VMotion offset;
+		protected VMotion top;
+		protected VMotion right;
 		protected int lastSelect = -1;
 
 		public GuiGallery(final R position) {
 			super(position);
-			this.offset = V.am(0);
-			this.panel = new GalleryPanel(new R(Coord.left(0), Coord.top(this.offset), Coord.right(0), Coord.bottom(0)));
+			this.top = V.am(0);
+			this.right = V.am(0);
+			this.panel = new GalleryPanel(new R(Coord.left(0), Coord.top(this.top), Coord.right(this.right), Coord.bottom(0)));
 			this.mouseOver = new GuiGalleryMouseOver(new R(), GuiManager.this);
 		}
 
@@ -187,6 +189,10 @@ public class GuiManager extends WFrame implements Controllable {
 		@Override
 		public boolean isActive() {
 			return GuiManager.this.isActive();
+		}
+
+		public VMotion getRightVMotion() {
+			return this.right;
 		}
 
 		@Override
@@ -232,7 +238,7 @@ public class GuiManager extends WFrame implements Controllable {
 				this.areaSelect = false;
 			}
 			if (this.areaSelect&&this.startSelectPoint!=null) {
-				this.selectArea = new Area(this.startSelectPoint.x(), this.selectAbsY+this.offset.get(), p.x(), p.y());
+				this.selectArea = new Area(this.startSelectPoint.x(), this.selectAbsY+this.top.get(), p.x(), p.y());
 				if (height()-3<=p.y())
 					scroll(ev, pgp, p, -50);
 				else if (p.y()<=3)
@@ -241,21 +247,21 @@ public class GuiManager extends WFrame implements Controllable {
 
 			if (this.lastSelectCache!=this.lastSelect) {
 				final Area a = getGuiPosition(pgp);
-				final Area panelArea = new R(Coord.pleft((this.lastSelect%row)/(float) row), Coord.top((this.lastSelect/row)*((height()/row)+3)+this.offset.get()), Coord.pwidth(1f/(row+.3f)), Coord.height(getPanelHeight())).getAbsolute(a);
+				final Area panelArea = new R(Coord.pleft((this.lastSelect%row)/(float) row), Coord.top((this.lastSelect/row)*((height()/row)+3)+this.top.get()), Coord.pwidth(1f/(row+.3f)), Coord.height(getPanelHeight())).getAbsolute(a);
 				if (!a.areaInside(panelArea)) {
 					final int lastSelectLine = getLine(this.lastSelect);
 					final int lastSelectCacheLine = getLine(this.lastSelectCache);
 					float move = 0;
 					if (lastSelectLine==lastSelectCacheLine)
 						if (height()-panelArea.maxY()<panelArea.minY())
-							move = this.offset.get()+(height()-panelArea.maxY());
+							move = this.top.get()+(height()-panelArea.maxY());
 						else
-							move = this.offset.get()-panelArea.minY();
+							move = this.top.get()-panelArea.minY();
 					else if (this.lastSelect>this.lastSelectCache)
-						move = this.offset.get()+(height()-panelArea.maxY());
+						move = this.top.get()+(height()-panelArea.maxY());
 					else
-						move = this.offset.get()-panelArea.minY();
-					this.offset.stop().add(Easings.easeOutSine.move(.25f, move)).start();
+						move = this.top.get()-panelArea.minY();
+					this.top.stop().add(Easings.easeOutSine.move(.25f, move)).start();
 				}
 			}
 			this.lastSelectCache = this.lastSelect;
@@ -275,15 +281,22 @@ public class GuiManager extends WFrame implements Controllable {
 		@Override
 		public boolean mouseDragged(final WEvent ev, final Area pgp, final Point p, final int button, final long time) {
 			if (button<=1&&!GuiScreen.isCtrlKeyDown()&&!GuiScreen.isShiftKeyDown()&&!GuiGallery.this.mouseOver.isOpenMenu()&&this.startSelectPoint!=null)
-				this.areaSelect = true;
+				if (p.x()<width()-this.right.get())
+					this.areaSelect = true;
+				else
+					this.areaSelect = false;
 			return super.mouseDragged(ev, pgp, p, button, time);
 		}
 
 		@Override
 		public boolean mouseClicked(final WEvent ev, final Area pgp, final Point p, final int button) {
 			if (button<=1) {
-				this.startSelectPoint = p;
-				this.selectAbsY = p.y()-this.offset.get();
+				this.startSelectPoint = null;
+				this.areaSelect = false;
+				if (p.x()<width()-this.right.get()) {
+					this.startSelectPoint = p;
+					this.selectAbsY = p.y()-this.top.get();
+				}
 			}
 			if (!super.mouseClicked(ev, pgp, p, button)) {
 				selectAll(false);
@@ -341,14 +354,14 @@ public class GuiManager extends WFrame implements Controllable {
 		public void scroll(final WEvent ev, final Area pgp, final Point p, final int scroll, final boolean easing) {
 			if (isControllable()) {
 				final float lines = getLine(GuiManager.this.size);
-				final float nowheight = Math.abs(this.offset.get());
+				final float nowheight = Math.abs(this.top.get());
 				final float maxheight = ((height()/row)+3)*lines-height();
-				final float pscroll = nowheight-scroll>maxheight ? -maxheight : this.offset.get()+scroll;
+				final float pscroll = nowheight-scroll>maxheight ? -maxheight : this.top.get()+scroll;
 				final float move = Math.min(0, Math.max(-(lines*(height()*(1f/(GuiManager.row+.3f)))), pscroll));
 				if (easing)
-					this.offset.stop().add(Easings.easeOutSine.move(.25f, move)).start();
+					this.top.stop().add(Easings.easeOutSine.move(.25f, move)).start();
 				else
-					this.offset.stop().add(Motion.move(move)).start();
+					this.top.stop().add(Motion.move(move)).start();
 			}
 		}
 
@@ -460,7 +473,7 @@ public class GuiManager extends WFrame implements Controllable {
 			@Override
 			public void update(final WEvent ev, final Area pgp, final Point p) {
 				int i;
-				while ((i = getContainer().size())<=Math.min(((getGuiPosition(pgp).h()-GuiGallery.this.offset.get())/(((i%GuiManager.row)/(float) GuiManager.row)*GuiManager.this.size))*GuiManager.row, GuiManager.this.size-1))
+				while ((i = getContainer().size())<=Math.min(((getGuiPosition(pgp).h()-GuiGallery.this.top.get())/(((i%GuiManager.row)/(float) GuiManager.row)*GuiManager.this.size))*GuiManager.row, GuiManager.this.size-1))
 					add(i, GuiManager.row);
 
 				super.update(ev, pgp, p);
