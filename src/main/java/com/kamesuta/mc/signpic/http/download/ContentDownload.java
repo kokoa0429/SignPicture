@@ -36,7 +36,7 @@ import com.kamesuta.mc.signpic.state.State;
 import com.kamesuta.mc.signpic.util.Downloader;
 
 public  class ContentDownload extends Communicate implements Progressable {
-	private final  Content content;
+	private final @Nonnull Content content;
 	private boolean canceled;
 
 	public @Nonnull ContentDownload(final @Nonnull Content content) {

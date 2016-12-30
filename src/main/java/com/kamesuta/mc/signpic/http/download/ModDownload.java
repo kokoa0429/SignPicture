@@ -36,10 +36,10 @@ import net.minecraft.util.ChatStyle;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IChatComponent;
 
-public @Nonnull class ModDownload extends Communicate implements Progressable {
+public  class ModDownload extends Communicate implements Progressable {
 	protected boolean canceled;
 	protected State status = new State().setName("§6SignPicture Mod Update");
-	public @Nonnull ModDLResult result;
+	public  ModDLResult result;
 
 	@Override
 	public void communicate() {
@@ -131,7 +131,7 @@ public @Nonnull class ModDownload extends Communicate implements Progressable {
 		super.cancel();
 	}
 
-	public @Nonnull static class ModDLResult {
+	public  static class  ModDLResult {
 		public final @Nonnull IChatComponent response;
 
 		public @Nonnull ModDLResult(final @Nonnull IChatComponent response) {

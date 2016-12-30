@@ -10,12 +10,11 @@ import com.kamesuta.mc.signpic.Config;
 import com.kamesuta.mc.signpic.state.Progressable;
 import com.kamesuta.mc.signpic.util.NotifyCollections.NotifyArrayDeque;
 
-public   class Communicator {
+public  class Communicator {
 	public static Communicator instance = new Communicator();
 
 	private final @Nonnull NotifyArrayDeque<Progressable> tasks = new NotifyArrayDeque<Progressable>();
-	@SuppressWarnings("null")
-	private final @Nonnull ExecutorService threadpool = Executors.newFixedThreadPool(Config.getConfig().communicateThreads.get(),
+	private final  ExecutorService threadpool = Executors.newFixedThreadPool(Config.getConfig().communicateThreads.get(),
 			new ThreadFactoryBuilder().setNameFormat("signpic-http-%d").build());
 
 	public @Nonnull NotifyArrayDeque<Progressable> getTasks() {
