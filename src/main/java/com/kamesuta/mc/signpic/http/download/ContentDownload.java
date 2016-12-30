@@ -8,6 +8,8 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.util.List;
 
+import javax.annotation.Nonnull;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.CountingOutputStream;
@@ -33,21 +35,21 @@ import com.kamesuta.mc.signpic.state.Progressable;
 import com.kamesuta.mc.signpic.state.State;
 import com.kamesuta.mc.signpic.util.Downloader;
 
-public class ContentDownload extends Communicate implements Progressable {
-	private final Content content;
+public  class ContentDownload extends Communicate implements Progressable {
+	private final  Content content;
 	private boolean canceled;
 
-	public ContentDownload(final Content content) {
+	public @Nonnull ContentDownload(final @Nonnull Content content) {
 		this.content = content;
 	}
 
 	@Override
-	public State getState() {
+	public @Nonnull State getState() {
 		return this.content.state;
 	}
 
 	@Override
-	public void communicate() {
+	public  void communicate() {
 		File tmp = null;
 		InputStream input = null;
 		OutputStream output = null;
@@ -70,7 +72,7 @@ public class ContentDownload extends Communicate implements Progressable {
 			cachemeta.setURL(end);
 
 			final File cachefile = ContentLocation.cacheLocation(endid);
-			if (cachemeta.isAvailable()&&!cachemeta.isDirty()&&cachefile.exists()) {
+			if (cachemeta.isAvailable() && !cachemeta.isDirty() && cachefile.exists()) {
 				req.abort();
 				onDone(new CommunicateResponse(true, null));
 				return;
@@ -83,11 +85,11 @@ public class ContentDownload extends Communicate implements Progressable {
 
 			tmp = Client.location.createCache("content");
 
-			final long max = Config.instance.contentMaxByte.get();
+			final long max = Config.getConfig().contentMaxByte.get();
 			final long size = entity.getContentLength();
-			if (max>0&&(size<0||size>max)) {
+			if (max > 0 && (size < 0 || size > max)) {
 				req.abort();
-				throw new ContentCapacityOverException("size: "+size);
+				throw new ContentCapacityOverException("size: " + size);
 			}
 
 			final Progress progress = this.content.state.getProgress();
@@ -101,7 +103,7 @@ public class ContentDownload extends Communicate implements Progressable {
 						throw new LoadCanceledException();
 					}
 					final long bcount = getByteCount();
-					if (max>0&&bcount>max) {
+					if (max > 0 && bcount > max) {
 						req.abort();
 						throw new ContentCapacityOverException();
 					}

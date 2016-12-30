@@ -8,6 +8,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
 
+import javax.annotation.Nonnull;
+
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.output.CountingOutputStream;
@@ -34,10 +36,10 @@ import net.minecraft.util.ChatStyle;
 import net.minecraft.util.EnumChatFormatting;
 import net.minecraft.util.IChatComponent;
 
-public class ModDownload extends Communicate implements Progressable {
+public @Nonnull class ModDownload extends Communicate implements Progressable {
 	protected boolean canceled;
 	protected State status = new State().setName("§6SignPicture Mod Update");
-	public ModDLResult result;
+	public @Nonnull ModDLResult result;
 
 	@Override
 	public void communicate() {
@@ -119,7 +121,7 @@ public class ModDownload extends Communicate implements Progressable {
 	}
 
 	@Override
-	public State getState() {
+	public  @Nonnull State getState() {
 		return this.status;
 	}
 
@@ -129,10 +131,10 @@ public class ModDownload extends Communicate implements Progressable {
 		super.cancel();
 	}
 
-	public static class ModDLResult {
-		public final IChatComponent response;
+	public @Nonnull static class ModDLResult {
+		public final @Nonnull IChatComponent response;
 
-		public ModDLResult(final IChatComponent response) {
+		public @Nonnull ModDLResult(final @Nonnull IChatComponent response) {
 			this.response = response;
 		}
 	}

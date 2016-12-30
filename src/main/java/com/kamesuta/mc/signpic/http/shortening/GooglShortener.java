@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+import javax.annotation.Nonnull;
+
 import org.apache.commons.io.Charsets;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
@@ -21,18 +23,18 @@ import com.kamesuta.mc.signpic.state.Progressable;
 import com.kamesuta.mc.signpic.state.State;
 import com.kamesuta.mc.signpic.util.Downloader;
 
-public class GooglShortener extends Communicate implements Progressable, IShortener {
+public  class GooglShortener extends Communicate implements Progressable, IShortener {
 	protected ShorteningRequest shortreq;
 	protected String key;
 	protected GooglResult result;
 
-	public GooglShortener(final ShorteningRequest shortreq, final String key) {
+	public @Nonnull GooglShortener(final @Nonnull ShorteningRequest shortreq, final @Nonnull String key) {
 		this.shortreq = shortreq;
 		this.key = key;
 	}
 
 	@Override
-	public State getState() {
+	public @Nonnull State getState() {
 		return this.shortreq.getState("§dgoo.gl: §r%s");
 	}
 
@@ -80,22 +82,22 @@ public class GooglShortener extends Communicate implements Progressable, IShorte
 		return;
 	}
 
-	public static class GooglRequest {
+	public   static class GooglRequest {
 		String longUrl;
 
-		public GooglRequest(final String longUrl) {
+		public GooglRequest(final@Nonnull String longUrl) {
 			this.longUrl = longUrl;
 		}
 	}
 
-	public static class GooglResult {
-		public String kind;
-		public String id;
-		public String longUrl;
+	public  static class GooglResult {
+		public @Nonnull String kind;
+		public @Nonnull String id;
+		public @Nonnull String longUrl;
 	}
 
 	@Override
-	public String getShortLink() {
+	public  String getShortLink() {
 		if (this.result!=null)
 			return this.result.id;
 		return null;

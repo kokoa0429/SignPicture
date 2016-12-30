@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
+import javax.annotation.Nonnull;
+
 import org.apache.commons.io.Charsets;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpEntity;
@@ -19,18 +21,18 @@ import com.kamesuta.mc.signpic.state.Progressable;
 import com.kamesuta.mc.signpic.state.State;
 import com.kamesuta.mc.signpic.util.Downloader;
 
-public class BitlyShortener extends Communicate implements Progressable, IShortener {
+public @Nonnull class BitlyShortener extends Communicate implements Progressable, IShortener {
 	protected ShorteningRequest shortreq;
 	protected String key;
 	protected BitlyResult result;
 
-	public BitlyShortener(final ShorteningRequest shortreq, final String key) {
+	public @Nonnull  BitlyShortener(final @Nonnull ShorteningRequest shortreq, final @Nonnull String key) {
 		this.shortreq = shortreq;
 		this.key = key;
 	}
 
 	@Override
-	public State getState() {
+	public @Nonnull State getState() {
 		return this.shortreq.getState("§dbit.ly: §r%s");
 	}
 
@@ -72,22 +74,22 @@ public class BitlyShortener extends Communicate implements Progressable, IShorte
 		return;
 	}
 
-	public static class BitlyResult {
-		public Data data;
-		public int status_code;
-		public String status_txt;
+	public @Nonnull static class BitlyResult {
+		public @Nonnull Data data;
+		public @Nonnull int  status_code;
+		public @Nonnull String status_txt;
 
-		public static class Data {
-			public String long_url;
-			public String url;
-			public String hash;
-			public String global_hash;
-			public String new_hash;
+		public @Nonnull  static class Data {
+			public @Nonnull String long_url;
+			public @Nonnull String url;
+			public @Nonnull String hash;
+			public @Nonnull String global_hash;
+			public @Nonnull String new_hash;
 		}
 	}
 
 	@Override
-	public String getShortLink() {
+	public @Nonnull String getShortLink() {
 		if (this.result!=null&&this.result.data!=null)
 			return this.result.data.url;
 		return null;
