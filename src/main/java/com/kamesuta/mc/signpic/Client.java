@@ -1,17 +1,28 @@
 package com.kamesuta.mc.signpic;
 
+import java.awt.Desktop;
 import java.awt.GraphicsEnvironment;
 import java.io.Closeable;
 import java.io.File;
 import java.lang.reflect.Field;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.swing.JOptionPane;
 
+import org.apache.commons.lang3.StringUtils;
+
+import com.google.common.collect.ImmutableSet;
 import com.google.gson.Gson;
+import com.kamesuta.mc.signpic.command.CommandImage;
+import com.kamesuta.mc.signpic.command.CommandVersion;
 import com.kamesuta.mc.signpic.command.RootCommand;
 import com.kamesuta.mc.signpic.gui.GuiMain;
 import com.kamesuta.mc.signpic.render.CustomTileEntitySignRenderer;
@@ -20,33 +31,55 @@ import cpw.mods.fml.client.FMLClientHandler;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockSign;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.audio.PositionedSoundRecord;
+import net.minecraft.client.resources.I18n;
 import net.minecraft.launchwrapper.LaunchClassLoader;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.tileentity.TileEntitySign;
 import net.minecraft.util.MovingObjectPosition;
+import net.minecraft.util.ResourceLocation;
+import net.minecraftforge.common.ForgeVersion;
+import net.minecraftforge.common.MinecraftForge;
 
 public class Client {
-	public static final Minecraft mc = FMLClientHandler.instance().getClient();
+	public static final @Nonnull Minecraft mc = FMLClientHandler.instance().getClient();
 
-	public static final Gson gson = new Gson();
+	public static final @Nonnull Gson gson = new Gson();
 
-	public static CustomTileEntitySignRenderer renderer;
-	public static CoreHandler handler;
-	public static Locations location;
+	public static @Nonnull CustomTileEntitySignRenderer renderer = new CustomTileEntitySignRenderer();
+	public static @Nonnull CoreHandler handler = new CoreHandler();
+	private static @Nullable Locations location;
 
-	public static String mcversion;
-	public static String forgeversion;
+	public static @Nonnull Locations getLocation() {
+		if (location!=null)
+			return location;
+		throw new IllegalStateException("signpic location not initialized");
+	}
 
-	public static String id;
-	public static String name;
+	public static void initLocation(final @Nonnull Locations locations) {
+		location = locations;
+	}
 
-	public static RootCommand rootCommand;
+	public static @Nonnull String mcversion = MinecraftForge.MC_VERSION;
+	public static @Nonnull String forgeversion = ForgeVersion.getVersion();
+
+	public static @Nullable String id;
+	public static @Nullable String name;
+	public static @Nullable String token;
+
+	public static @Nullable RootCommand rootCommand;
+
+	static {
+		final RootCommand cmd = rootCommand = new RootCommand();
+		cmd.addChildCommand(new CommandVersion());
+		cmd.addChildCommand(new CommandImage());
+	}
 
 	public static void openEditor() {
 		mc.displayGuiScreen(new GuiMain(mc.currentScreen));
 	}
 
-	public static void startSection(final String sec) {
+	public static void startSection(final @Nonnull String sec) {
 		mc.mcProfiler.startSection(sec);
 	}
 
@@ -54,13 +87,45 @@ public class Client {
 		mc.mcProfiler.endSection();
 	}
 
-	public static TileEntitySign getTileSignLooking() {
+	public static @Nullable TileEntitySign getTileSignLooking() {
 		if (MovePos.getBlock() instanceof BlockSign) {
 			final TileEntity tile = MovePos.getTile();
 			if (tile instanceof TileEntitySign)
 				return (TileEntitySign) tile;
 		}
 		return null;
+	}
+
+	public static void playSound(final @Nonnull ResourceLocation location, final float volume) {
+		mc.getSoundHandler().playSound(PositionedSoundRecord.func_147674_a(location, volume));
+	}
+
+	public static final Set<String> schemes = ImmutableSet.of("http", "https");
+
+	public static boolean openURL(final @Nonnull String uri) {
+		try {
+			return openURL(new URI(uri));
+		} catch (final Throwable e) {
+			Log.notice(I18n.format("signpic.gui.notice.openurlfailed", e));
+			Log.log.warn("Failed to open URL", e);
+		}
+		return false;
+	}
+
+	public static boolean openURL(final @Nonnull URI uri) {
+		try {
+			final String scheme = StringUtils.lowerCase(uri.getScheme());
+			if (!schemes.contains(scheme))
+				throw new URISyntaxException(uri.toString(), "Unsupported protocol: "+scheme);
+			final Desktop desktop = Desktop.getDesktop();
+			desktop.browse(uri);
+		} catch (final URISyntaxException e) {
+			Log.notice(I18n.format("signpic.gui.notice.openurlfailed.invalid"));
+		} catch (final Throwable e) {
+			Log.notice(I18n.format("signpic.gui.notice.openurlfailed", e));
+			Log.log.warn("Failed to open URL", e);
+		}
+		return false;
 	}
 
 	public static class MovePos {
@@ -74,25 +139,25 @@ public class Client {
 			this.z = z;
 		}
 
-		public static MovingObjectPosition getMovingPos() {
+		public static @Nullable MovingObjectPosition getMovingPos() {
 			return mc.objectMouseOver;
 		}
 
-		public static MovePos getBlockPos() {
+		public static @Nullable MovePos getBlockPos() {
 			final MovingObjectPosition movingPos = getMovingPos();
 			if (movingPos!=null)
 				return new MovePos(movingPos.blockX, movingPos.blockY, movingPos.blockZ);
 			return null;
 		}
 
-		public static TileEntity getTile() {
+		public static @Nullable TileEntity getTile() {
 			final MovePos movePos = getBlockPos();
 			if (movePos!=null)
 				return mc.theWorld.getTileEntity(movePos.x, movePos.y, movePos.z);
 			return null;
 		}
 
-		public static Block getBlock() {
+		public static @Nullable Block getBlock() {
 			final MovePos movePos = getBlockPos();
 			if (movePos!=null)
 				return mc.theWorld.getBlock(movePos.x, movePos.y, movePos.z);
@@ -101,7 +166,7 @@ public class Client {
 	}
 
 	@SuppressWarnings("unchecked")
-	public static void deleteMod(final File mod) {
+	public static void deleteMod(final @Nonnull File mod) {
 		if (mod.delete())
 			return;
 
@@ -131,11 +196,11 @@ public class Client {
 			final String msg = Reference.NAME+" was unable to delete file "+mod.getPath()+" the game will now try to delete it on exit. If this dialog appears again, delete it manually.";
 			Log.log.error(msg);
 			if (!GraphicsEnvironment.isHeadless())
-				JOptionPane.showMessageDialog(null, msg, "An update error has occured", JOptionPane.ERROR_MESSAGE);
+				JOptionPane.showMessageDialog(null, msg, "An update error has occurred", JOptionPane.ERROR_MESSAGE);
 		}
 	}
 
-	public static String urlNoFragString(final URL url) {
+	public static @Nonnull String urlNoFragString(final @Nonnull URL url) {
 		final StringBuilder strForm = new StringBuilder();
 
 		String protocol = url.getProtocol();
@@ -169,7 +234,8 @@ public class Client {
 	}
 
 	public static void deleteMod() {
-		if (Client.location.modFile.isFile())
-			deleteMod(Client.location.modFile);
+		final Locations loc = location;
+		if (loc!=null&&loc.modFile.isFile())
+			deleteMod(loc.modFile);
 	}
 }

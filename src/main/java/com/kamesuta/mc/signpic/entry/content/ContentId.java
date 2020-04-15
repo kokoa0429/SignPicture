@@ -1,27 +1,31 @@
 package com.kamesuta.mc.signpic.entry.content;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
 
 import net.minecraft.util.ResourceLocation;
 
 public class ContentId {
-	private final String id;
+	public static final @Nonnull ResourceLocation hideTexture = new ResourceLocation("signpic", "textures/state/hide.png");
+	public static final @Nonnull ContentId hideContent = ContentId.fromResource(hideTexture);
 
-	public ContentId(String uri) {
+	private final @Nonnull String id;
+
+	protected ContentId(@Nonnull String uri) {
 		if (StringUtils.contains(uri, "http://"))
-			uri = StringUtils.substring(uri, 7, StringUtils.length(uri));
+			uri = ""+StringUtils.substring(uri, 7, StringUtils.length(uri));
 		else if (StringUtils.contains(uri, "https://"))
 			uri = "$"+StringUtils.substring(uri, 8, StringUtils.length(uri));
 		this.id = uri;
 	}
 
-	public String getID() {
+	public @Nonnull String getID() {
 		return this.id;
 	}
 
-	public String getURI() {
+	public @Nonnull String getURI() {
 		if (!StringUtils.startsWith(this.id, "!"))
 			if (StringUtils.startsWith(this.id, "$"))
 				return "https://"+StringUtils.substring(this.id, 1);
@@ -30,20 +34,16 @@ public class ContentId {
 		return this.id;
 	}
 
-	public String id() {
-		return this.id;
-	}
-
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime*result+(this.id==null ? 0 : this.id.hashCode());
+		result = prime*result+this.id.hashCode();
 		return result;
 	}
 
 	@Override
-	public boolean equals(final Object obj) {
+	public boolean equals(final @Nullable Object obj) {
 		if (this==obj)
 			return true;
 		if (obj==null)
@@ -51,16 +51,13 @@ public class ContentId {
 		if (!(obj instanceof ContentId))
 			return false;
 		final ContentId other = (ContentId) obj;
-		if (this.id==null) {
-			if (other.id!=null)
-				return false;
-		} else if (!this.id.equals(other.id))
+		if (!this.id.equals(other.id))
 			return false;
 		return true;
 	}
 
 	@Override
-	public String toString() {
+	public @Nullable String toString() {
 		return String.format("ContentId [id=%s]", this.id);
 	}
 
@@ -68,7 +65,7 @@ public class ContentId {
 		return this.id.startsWith("!");
 	}
 
-	public ResourceLocation getResource() {
+	public @Nonnull ResourceLocation getResource() {
 		return new ResourceLocation(StringUtils.substring(this.id, 1));
 	}
 
@@ -76,7 +73,11 @@ public class ContentId {
 		return ContentManager.instance.get(this);
 	}
 
-	public static ContentId fromResource(final ResourceLocation location) {
-		return new ContentId("!"+location.toString());
+	public static @Nonnull ContentId from(final @Nonnull String uri) {
+		return new ContentId(uri);
+	}
+
+	public static @Nonnull ContentId fromResource(final @Nonnull ResourceLocation location) {
+		return from("!"+location.toString());
 	}
 }

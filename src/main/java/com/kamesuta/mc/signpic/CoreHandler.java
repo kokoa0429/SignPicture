@@ -1,5 +1,7 @@
 package com.kamesuta.mc.signpic;
 
+import javax.annotation.Nonnull;
+
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.util.Timer;
 
@@ -30,19 +32,20 @@ import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.client.event.MouseEvent;
 import net.minecraftforge.client.event.RenderGameOverlayEvent;
 import net.minecraftforge.client.event.RenderWorldLastEvent;
+import net.minecraftforge.client.event.TextureStitchEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.event.entity.player.ItemTooltipEvent;
 
 public class CoreHandler {
-	public final Config configHandler = Config.instance;
-	public final KeyHandler keyHandler = new KeyHandler();
-	public final SignHandler signHandler = new SignHandler();
-	public final EntryManager signEntryManager = EntryManager.instance;
-	public final ContentManager contentManager = ContentManager.instance;
-	public final SignPicRender renderHandler = new SignPicRender();
-	public final OverlayFrame overlayHandler = OverlayFrame.instance;
-	public final Informations informationHandler = Informations.instance;
-	public final Apis apiHandler = Apis.instance;
+	public final @Nonnull Config configHandler = Config.getConfig();
+	public final @Nonnull KeyHandler keyHandler = KeyHandler.instance;
+	public final @Nonnull SignHandler signHandler = new SignHandler();
+	public final @Nonnull EntryManager signEntryManager = EntryManager.instance;
+	public final @Nonnull ContentManager contentManager = ContentManager.instance;
+	public final @Nonnull SignPicRender renderHandler = new SignPicRender();
+	public final @Nonnull OverlayFrame overlayHandler = OverlayFrame.instance;
+	public final @Nonnull Informations informationHandler = Informations.instance;
+	public final @Nonnull Apis apiHandler = Apis.instance;
 
 	public void init() {
 		FMLCommonHandler.instance().bus().register(this);
@@ -54,62 +57,68 @@ public class CoreHandler {
 	}
 
 	@SubscribeEvent
-	public void onKeyInput(final InputEvent event) {
+	public void onKeyInput(final @Nonnull InputEvent event) {
 		this.keyHandler.onKeyInput(event);
 	}
 
 	@SubscribeEvent
-	public void onRenderTick(final TickEvent.RenderTickEvent event) {
+	public void onRenderTick(final @Nonnull TickEvent.RenderTickEvent event) {
 		Timer.tick();
 	}
 
 	@SubscribeEvent
-	public void onSign(final GuiOpenEvent event) {
+	public void onSign(final @Nonnull GuiOpenEvent event) {
 		this.signHandler.onSign(event);
 	}
 
 	@SubscribeEvent
-	public void onClick(final MouseEvent event) {
+	public void onClick(final @Nonnull MouseEvent event) {
 		this.signHandler.onClick(event);
 	}
 
 	@SubscribeEvent
-	public void onTooltip(final ItemTooltipEvent event) {
+	public void onTooltip(final @Nonnull ItemTooltipEvent event) {
 		this.signHandler.onTooltip(event);
 	}
 
 	@SubscribeEvent
-	public void onRender(final RenderWorldLastEvent event) {
+	public void onRender(final @Nonnull RenderWorldLastEvent event) {
 		this.renderHandler.onRender(event);
 	}
 
 	@SubscribeEvent()
-	public void onDraw(final RenderGameOverlayEvent.Post event) {
+	public void onDraw(final @Nonnull RenderGameOverlayEvent.Post event) {
 		this.renderHandler.onDraw(event);
 		this.overlayHandler.onDraw(event);
 	}
 
 	@SubscribeEvent()
-	public void onDraw(final GuiScreenEvent.DrawScreenEvent.Post event) {
+	public void onDraw(final @Nonnull GuiScreenEvent.DrawScreenEvent.Post event) {
 		this.overlayHandler.onDraw(event);
 		this.signHandler.onDraw(event);
 	}
 
 	@SubscribeEvent
-	public void onText(final RenderGameOverlayEvent.Text event) {
+	public void onText(final @Nonnull RenderGameOverlayEvent.Text event) {
 		this.renderHandler.onText(event);
 	}
 
 	@SubscribeEvent
-	public void onConfigChanged(final ConfigChangedEvent.OnConfigChangedEvent eventArgs) {
+	public void onConfigChanged(final @Nonnull ConfigChangedEvent.OnConfigChangedEvent eventArgs) {
 		this.configHandler.onConfigChanged(eventArgs);
 	}
 
 	@SubscribeEvent
-	public void onTick(final ClientTickEvent event) {
+	public void onResourceReloaded(final @Nonnull TextureStitchEvent.Post event) {
+		this.contentManager.onResourceReloaded(event);
+	}
+
+	@SubscribeEvent
+	public void onTick(final @Nonnull ClientTickEvent event) {
 		if (event.phase==Phase.END) {
 			Client.startSection("signpic_load");
 			debugKey();
+			// this.keyHandler.onTick();
 			this.signEntryManager.onTick();
 			this.signHandler.onTick();
 			this.contentManager.onTick();
@@ -120,9 +129,9 @@ public class CoreHandler {
 		}
 	}
 
-	boolean debugKey;
+	private boolean debugKey;
 
-	void debugKey() {
+	private void debugKey() {
 		if (Keyboard.isKeyDown(Keyboard.KEY_I)&&Keyboard.isKeyDown(Keyboard.KEY_O)&&Keyboard.isKeyDown(Keyboard.KEY_P)) {
 			if (!this.debugKey)
 				debug();
@@ -131,7 +140,7 @@ public class CoreHandler {
 			this.debugKey = false;
 	}
 
-	void debug() {
+	private void debug() {
 		// Client.openEditor();
 		// Reference.logger.info("try to delete: "+Client.location.modFile.getName());
 		// Client.deleteMod();
@@ -139,10 +148,12 @@ public class CoreHandler {
 		final DebugCommunicate debug = new DebugCommunicate();
 		debug.getState().getMeta().put(GuiTask.HighlightPanel, true);
 		Communicator.instance.communicate(debug);
+		// Log.log.info(FMLDeobfuscatingRemapper.INSTANCE.mapMethodName("net/minecraft/client/gui/GuiNewChat", "resetScroll", DescHelper.toDesc(void.class, new Object[0])));
+		// Log.log.info(FMLDeobfuscatingRemapper.INSTANCE.mapMethodName("net/minecraft/client/gui/GuiNewChat", "resetScroll", DescHelper.toDesc(void.class, new Object[0])));
 	}
 
-	private static class DebugCommunicate implements ICommunicate, Progressable {
-		State state = new State();
+	static class DebugCommunicate implements ICommunicate, Progressable {
+		private @Nonnull State state = new State();
 		{
 			this.state.setName("Debug Progress").getProgress().setOverall(10);
 		}
@@ -152,7 +163,7 @@ public class CoreHandler {
 		}
 
 		@Override
-		public State getState() {
+		public @Nonnull State getState() {
 			return this.state;
 		}
 
@@ -169,7 +180,7 @@ public class CoreHandler {
 		}
 
 		@Override
-		public void setCallback(final ICommunicateCallback callback) {
+		public void setCallback(final @Nonnull ICommunicateCallback callback) {
 		}
 	}
 }

@@ -5,48 +5,80 @@ import javax.annotation.Nullable;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.kamesuta.mc.signpic.attr.AttrReaders;
+import com.kamesuta.mc.signpic.attr.AttrWriters;
 import com.kamesuta.mc.signpic.entry.content.Content;
 import com.kamesuta.mc.signpic.entry.content.ContentId;
 import com.kamesuta.mc.signpic.gui.GuiImage;
-import com.kamesuta.mc.signpic.image.meta.ImageMeta;
+import com.kamesuta.mc.signpic.mode.CurrentMode;
 
 public class Entry {
 	public final @Nonnull EntryId id;
 	public final @Nullable ContentId contentId;
-	public final @Nonnull GuiImage gui;
+	private @Nullable GuiImage gui;
+	private final boolean valid;
+	private final boolean outdated;
 
-	private transient ImageMeta meta;
-	private String cmetacache;
+	private transient @Nullable AttrReaders meta;
+	private @Nullable String cmetacache;
 
 	protected Entry(final @Nonnull EntryId id) {
 		this.id = id;
+		this.valid = id.isValid();
+		this.outdated = id.isOutdated();
 		this.contentId = id.getContentId();
-		this.gui = new GuiImage(this);
 	}
 
-	public @Nonnull Content content() {
-		return this.contentId.content();
+	public @Nonnull GuiImage getGui() {
+		if (this.gui!=null)
+			return this.gui;
+		return this.gui = new GuiImage(this);
+	}
+
+	public @Nullable Content getContent() {
+		if (CurrentMode.instance.isState(CurrentMode.State.HIDE))
+			return ContentId.hideContent.content();
+		else if (this.contentId!=null)
+			return this.contentId.content();
+		else
+			return null;
 	}
 
 	public boolean isNotSupported() {
-		return getMeta().hasInvalidMeta()||this.id.hasPrePrefix();
+		final AttrReaders meta = getMeta();
+		return meta.hasInvalidMeta()||this.id.getPrePrefix()!=null;
+	}
+
+	public boolean isOutdated() {
+		return this.outdated;
 	}
 
 	public boolean isValid() {
-		return this.contentId!=null&&getMeta()!=null;
+		return this.valid;
 	}
 
-	public @Nullable ImageMeta getMeta() {
-		final String newmeta = content().imagemeta;
+	public @Nonnull AttrReaders getMeta() {
+		final Content cntnt = getContent();
+		final String newmeta = cntnt!=null ? cntnt.imagemeta : null;
 		if (this.contentId!=null&&newmeta!=null)
 			if (!StringUtils.equals(this.cmetacache, newmeta)) {
 				final String meta1 = this.id.getMetaSource();
 				if (meta1!=null)
-					this.meta = new ImageMeta().init(newmeta).parse(meta1);
+					this.meta = new AttrReaders(meta1+newmeta);
 				this.cmetacache = newmeta;
 			}
 		if (this.meta==null)
 			this.meta = this.id.getMeta();
-		return this.meta;
+		if (this.meta!=null)
+			return this.meta;
+		return this.meta = AttrReaders.Blank;
+	}
+
+	public @Nullable AttrWriters getMetaBuilder() {
+		final Content cntnt = getContent();
+		final String newmeta = cntnt!=null ? cntnt.imagemeta : null;
+		if (this.contentId!=null&&newmeta!=null)
+			return new AttrWriters().parse(this.id.getMetaSource()+newmeta);
+		return this.id.getMetaBuilder();
 	}
 }

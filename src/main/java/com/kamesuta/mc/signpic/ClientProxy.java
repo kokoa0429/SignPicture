@@ -3,10 +3,9 @@ package com.kamesuta.mc.signpic;
 import java.io.File;
 import java.io.IOException;
 
-import com.kamesuta.mc.signpic.command.CommandVersion;
-import com.kamesuta.mc.signpic.command.RootCommand;
+import javax.annotation.Nonnull;
+
 import com.kamesuta.mc.signpic.render.CustomItemSignRenderer;
-import com.kamesuta.mc.signpic.render.CustomTileEntitySignRenderer;
 import com.mojang.util.UUIDTypeAdapter;
 
 import cpw.mods.fml.client.registry.ClientRegistry;
@@ -15,27 +14,23 @@ import cpw.mods.fml.common.event.FMLPostInitializationEvent;
 import cpw.mods.fml.common.event.FMLPreInitializationEvent;
 import net.minecraft.init.Items;
 import net.minecraft.tileentity.TileEntitySign;
+import net.minecraft.util.Session;
 import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.client.MinecraftForgeClient;
-import net.minecraftforge.common.ForgeVersion;
-import net.minecraftforge.common.MinecraftForge;
 
 public class ClientProxy extends CommonProxy {
 	@Override
-	public void preInit(final FMLPreInitializationEvent event) {
+	public void preInit(final @Nonnull FMLPreInitializationEvent event) {
 		super.preInit(event);
+
+		Log.log = event.getModLog();
+		Config.init(event.getSuggestedConfigurationFile());
 
 		// Setup stencil clip
 		// StencilClip.init();
 
-		// Setup image
-		Client.renderer = new CustomTileEntitySignRenderer();
-
-		Client.mcversion = MinecraftForge.MC_VERSION;
-		Client.forgeversion = ForgeVersion.getVersion();
-
 		// Setup location
-		Client.location = new Locations(event, getDataDirectory());
+		Client.initLocation(new Locations(event.getSourceFile(), getDataDirectory()));
 
 		// Get Id
 		final String id = Client.mc.getSession().getPlayerID();
@@ -43,19 +38,15 @@ public class ClientProxy extends CommonProxy {
 			final Object o = UUIDTypeAdapter.fromString(id);
 			if (o!=null) {
 				Client.id = id;
-				Client.name = Client.mc.getSession().getUsername();
+				final Session s = Client.mc.getSession();
+				Client.name = s.getUsername();
+				Client.token = s.getToken();
 			}
 		} catch (final IllegalArgumentException e) {
 		}
-
-		// Setup
-		Client.handler = new CoreHandler();
-		Client.rootCommand = new RootCommand();
-
-		Client.rootCommand.addChildCommand(new CommandVersion());
 	}
 
-	private File getDataDirectory() {
+	private @Nonnull File getDataDirectory() {
 		final File file = Client.mc.mcDataDir;
 		try {
 			return file.getCanonicalFile();
@@ -66,7 +57,7 @@ public class ClientProxy extends CommonProxy {
 	}
 
 	@Override
-	public void init(final FMLInitializationEvent event) {
+	public void init(final @Nonnull FMLInitializationEvent event) {
 		super.init(event);
 
 		// Replace Sign Renderer
@@ -79,7 +70,9 @@ public class ClientProxy extends CommonProxy {
 	}
 
 	@Override
-	public void postInit(final FMLPostInitializationEvent event) {
+	public void postInit(final @Nonnull FMLPostInitializationEvent event) {
 		super.postInit(event);
+
+		Config.getConfig().save();
 	}
 }
